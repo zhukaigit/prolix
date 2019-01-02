@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+        ">
+
+    <import resource="classpath:springMybatis/spring-datasource.xml"/>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:springMybatis/mapper/*.xml</value>
+            </list>
+        </property>
+        <property name="typeAliasesPackage" value="com.zk.springMybatis.model"/>
+        <property name="plugins">
+            <list>
+                <bean class="com.github.pagehelper.PageHelper">
+                    <property name="properties">
+                        <value>
+                            dialect=mysql
+                            offsetAsPageNum=false
+                            rowBoundsWithCount=false
+                            pageSizeZero=true
+                            reasonable=true
+                            supportMethodsArguments=false
+                            returnPageInfo=none
+                        </value>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 需要添加依赖 tk.mybatis:mapper:3.3.8 -->
+    <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.zk.springMybatis.mapper"/>
+        <!-- 3.2.2版本新特性，markerInterface可以起到mappers配置的作用，详细情况需要看Marker接口类 -->
+        <!-- <property name="markerInterface" value="com.isea533.mybatis.util.MyMapper"/>-->
+        <!-- 通用Mapper通过属性注入进行配置，默认不配置时会注册Mapper<T>接口 -->
+        <!--<property name="properties">
+            <value>
+                mappers=tk.mybatis.mapper.common.Mapper
+            </value>
+        </property>-->
+    </bean>
+
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+</beans>
