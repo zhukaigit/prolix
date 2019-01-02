@@ -58,6 +58,7 @@
     <module>springmvc-swagger</module>
     <module>aspectj-test</module>
     <module>java8</module>
+    <module>cryptography</module>
   </modules>
 
 </project>
