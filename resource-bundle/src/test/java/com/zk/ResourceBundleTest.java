@@ -1,5 +1,6 @@
 package com.zk;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Locale;
@@ -14,12 +15,11 @@ public class ResourceBundleTest {
      * ResourceBundle bundle = ResourceBundle.getBundle("res", new Locale("zh", "CN"));
      * 其中new Locale("zh", "CN");这个对象就告诉了程序你的本地化信息，
      * 就拿这个来说吧：程序查找步骤由前到后依次为：
-     * 1、首先res_zh_CN.properties
-     * 2、其次res_zh.properties
-     * 3、根绝当前系统的默认语言环境，假如是中文，则找res_zh_CN.properties
-     * 4、根绝当前系统的默认语言环境，假如是中文，再找res_zh_CN.properties
-     * 5、最后res.properties，
-     * 要还是找不到的话，那么就该抛异常了：MissingResourceException
+     * 1、首先按照language和country来找，即res_zh_CN.properties
+     * 2、若第1步没找到，则按照language来寻找，即res_zh.properties
+     * 3、若第2步还没有找到，则根据当前系统的默认语言环境，假如是中文，则找res_zh_CN.properties
+     * 4、若第3步没找到，则在res.properties中寻找
+     * 5、若以上都没找到，那么就该抛异常了：MissingResourceException
      * 我们可以来写个测试程序验证一下：
      *
      */
@@ -40,13 +40,42 @@ public class ResourceBundleTest {
          */
         print(Locale.GERMAN, baseName, key);
 
+    }
 
+    // 测试不存在对应的Locale properties文件，而key在默认的【res.properties】文件中
+    @Test
+    public void test1() {
+        final String baseName = "i18n/res";
+        final String key = "this.is.no.locale.file.but.key.is.in.res.properties";
+
+        print(new Locale("de", ""), baseName, key);
+    }
+
+    // key不在任何的properties文件中
+    @Test
+    public void test2() {
+        final String baseName = "i18n/res";
+        final String key = "key.is.not.exist";
+
+        boolean hasException = false;
+        try {
+            print(new Locale("de", ""), baseName, key);
+        } catch (Exception e) {
+            System.err.println("exception name is " + e.getClass().getSimpleName());
+            hasException = true;
+        }
+
+        Assert.assertTrue(hasException);
     }
 
     private void print(Locale locale, String baseName, String key) {
         ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
         String value = bundle.getString(key);
-        System.out.printf("locale={language : %s, country : %s}, %s = %s\r\n",
+        System.out.printf("\n===分割符===\n" +
+                        "locale = {language : %s, country : %s}\n" +
+                        "key = %s \n" +
+                        "value = %s" +
+                        "\n===分割符===\n",
                 locale.getLanguage(), locale.getCountry(), key, value);
 
     }
