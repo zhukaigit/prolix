@@ -37,7 +37,7 @@ public class QuickSort {
      * 优化，随机选择一个元素作为基础元素
      * <p>
      * 思路：随机选择数组中的一个元素为基础元素，将所有小于基础元素的其他元素放在其左边，这样就将原始数组分成
-     * 了3个部分，左右元素都小于基础元素，中间为基础元素，右边则是大于等于基础元素。然后在分别对左右区间
+     * 了3个部分，左侧所有元素都小于基础元素，中间为基础元素，右侧所有元素大于等于基础元素。然后在分别对左右区间
      * 进行递归式的排序。
      * <p>
      * 分区实现：设置两个指针下标。partionIndex指针：所有下标值小于该指针的元素，都是小于基础元素的数据；
@@ -48,22 +48,22 @@ public class QuickSort {
      * <p>
      *
      * @param arr   待排序数组
-     * @param start 待排序开始位置
-     * @param end   待排序结束位置
+     * @param startIndex 待排序开始位置
+     * @param endIndex   待排序结束位置
      */
-    public static void quictSort(Integer[] arr, int start, int end) {
-        if (start >= end) return;
+    public static void quictSort(Integer[] arr, int startIndex, int endIndex) {
+        if (startIndex >= endIndex) return;
         // 1、随机获取下标，作为基础元素的下标。
-        int baseIndex = start + (int) (Math.random() * (end - start + 1));
+        int baseIndex = startIndex + (int) (Math.random() * (endIndex - startIndex + 1));
         // 基础元素变量申明
         Integer baseElement = arr[baseIndex];
 
         // 2、大小区间分割下标，该下标左边的数据全是小于基础元素的数据
-        int partionIndex = start;
+        int partionIndex = startIndex;
 
         // 3、轮询与基础元素比较，将所有小于基础元素的数据移动到partionIndex指针的左边。
         // 实现方式：对比元素与partionIndex位置的元素交换，并将partionIndex++
-        for (int i = start; i <= end; i++) {
+        for (int i = startIndex; i <= endIndex; i++) {
             if (arr[i] < baseElement) {
                 // 数据交换
                 Integer temp = arr[partionIndex];
@@ -83,8 +83,8 @@ public class QuickSort {
         arr[partionIndex] = baseElement;
 
         // 递归从新左右区间数据排序
-        quictSort(arr, start, partionIndex - 1);
-        quictSort(arr, partionIndex + 1, end);
+        quictSort(arr, startIndex, partionIndex - 1);
+        quictSort(arr, partionIndex + 1, endIndex);
     }
 
 }
