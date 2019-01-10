@@ -8,8 +8,9 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class SinglyLinkedList_07 {
+public class NodeTest1 {
 
     @AllArgsConstructor
     @Setter
@@ -24,6 +25,18 @@ public class SinglyLinkedList_07 {
             return "Node{" +
                     "data=" + data +
                     '}';
+        }
+
+        public void printNode() {
+            StringBuilder str = new StringBuilder();
+            Node cur = this;
+            do {
+                str.append(cur.data).append(",");
+                cur = cur.next;
+            } while (cur != null);
+            String linkedStr = "[" + str.subSequence(0, str.lastIndexOf(",")) + "]";
+            System.out.println(linkedStr);
+
         }
 
     }
@@ -59,112 +72,6 @@ public class SinglyLinkedList_07 {
         return headNode;
     }
 
-
-    private static Node createCycleChain() {
-        //构造环链表
-        Node list = null;
-        Node tail = null;
-        for (int i = 5; i >= 1; i--) {
-            list = new Node(i, list);
-            if (i == 5) {
-                tail = list;
-            }
-        }
-        tail.next = list.next;
-        return list;
-    }
-
-    @Test
-    public void testCheckCycle() {
-        Node list = createCycleChain();
-        System.out.println(checkCycle(list));
-    }
-
-    /**
-     * 检测环是否存在 思路：快慢指针法
-     */
-    public static boolean checkCycle(Node list) {
-        Node list1 = list;
-        Node list2 = list;
-        while (true) {
-            if (list1 == null || list2 == null || list2.next == null) {
-                return false;
-            }
-            list1 = list1.next;
-            list2 = list2.next.next;
-            if (list1 == list2) {
-                return true;
-            }
-        }
-    }
-
-    @Test
-    public void testGetCycleLength() {
-        Node list = createCycleChain();
-        System.out.println(getCycleLength(list));
-    }
-
-    /**
-     * 获取环的长度
-     */
-    public static int getCycleLength(Node list) {
-        Node list1 = list;
-        Node list2 = list;
-        while (true) {
-            if (list1 == null || list2 == null || list2.next == null) {
-                return -1;
-            }
-            list1 = list1.next;
-            list2 = list2.next.next;
-            if (list1 == list2) {
-                break;
-            }
-        }
-
-        int count = 0;
-        while (true) {
-            list1 = list1.next;
-            list2 = list2.next.next;
-            count++;
-            if (list1 == list2) {
-                return count;
-            }
-        }
-    }
-
-    @Test
-    public void testGetPortalNode() {
-        Node list = createCycleChain();
-        System.out.println(getPortalNode(list));
-    }
-
-    /**
-     * 获取环入口节点
-     */
-    public static Node getPortalNode(Node list) {
-        Node list1 = list;
-        Node list2 = list;
-        while (true) {
-            if (list1 == null || list2 == null || list2.next == null) {
-                return null;
-            }
-            list1 = list1.next;
-            list2 = list2.next.next;
-            if (list1 == list2) {
-                break;
-            }
-        }
-
-        //list2重头开始，一步一个开始跑
-        list2 = list;
-        while (true) {
-            list1 = list1.next;
-            list2 = list2.next;
-            if (list1 == list2) {
-                return list1;
-            }
-        }
-    }
 
     @Test
     public void test() {
@@ -222,54 +129,63 @@ public class SinglyLinkedList_07 {
 
     @Test
     public void testDeleteNode() {
+        System.out.println("================ 删除头部节点 ================");
         Node list = null;
         for (int i = 5; i >= 1; i--) {
             list = new Node(i, list);
         }
-//        for (int i = 1; i <= 5; i++) {
-//            System.out.println("删除倒数第" + i + "个，数据节点为：" + deleteNode(list, i).data);
-//        }
-        Node node = deleteNode(list, 3);
-        System.out.println(node);
+        list.printNode();
+        list = deleteNode(list, 5);
+        list.printNode();
+
+
+        System.out.println("================ 删除中间一个节点 ================");
+        Node list2 = null;
+        for (int i = 5; i >= 1; i--) {
+            list2 = new Node(i, list2);
+        }
+        list2.printNode();
+        list2 = deleteNode(list2, 2);
+        list2.printNode();
+
+
+        System.out.println("================ 删除最后一个节点 ================");
+        Node list3 = null;
+        for (int i = 5; i >= 1; i--) {
+            list3 = new Node(i, list3);
+        }
+        list3.printNode();
+        list3 = deleteNode(list3, 1);
+        list3.printNode();
     }
 
     /**
      * 删除链表倒数第 n 个结点
+     *
+     * 返回删除后的链表
      */
-    public static Node deleteNode(Node list, int n) {
-        Node before = null;
-        Node after = null;
-        Node deleteNode = null;
-        Node slow = list;
-        if (n <= 0 || list == null) {
-            return null;
-        }
-        Node fast = list;
-        for (int i = 0; i < n; i++) {
-            if (fast == null) {
-                return null;
+    public static Node deleteNode(Node node, int n) {
+        Objects.requireNonNull(node, "node不能为控");
+        if (n < 1) throw new RuntimeException("参数n必须大于0");
+        Node before = node;
+        Node after = node;
+        int count = 0;
+        while (after != null) {
+            if (count++ > n) {
+                before = before.next;
             }
-            fast = fast.next;
+            after = after.next;
         }
 
-        while (true) {
-            if (fast == null) {
-                break;
-            }
-            before = slow;
-            slow = slow.next;
-            fast = fast.next;
-        }
-        deleteNode = slow;
-        after = deleteNode.next;
-
-        if (before == null) {
-            list = list.next;
-        } else {
-            before.next = after;
+        // 表示删除的是头部节点
+        if (count == n) {
+            return node.next;
         }
 
-        return list;
+        // 申明待删除节点的前一个节点
+        Node deletePreNode = before;
+        deletePreNode.next = deletePreNode.next.next;
+        return node;
     }
 
     @Test

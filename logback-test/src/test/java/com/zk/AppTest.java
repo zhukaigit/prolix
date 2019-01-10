@@ -17,6 +17,9 @@ public class AppTest {
 
   /**
    * 测试：为每一个请求添加唯一标示
+   *
+   * 背景：想要完整地追踪某个请求，如果通过线程名称会搜索到很多的记录，原因是服务器响应请求的线程池中，
+   * 线程个数是有限的被循环使用。那么通过MDC在日志可以添加一个唯一标示，用来追踪请求
    */
   @Test
   public void test() throws InterruptedException {
