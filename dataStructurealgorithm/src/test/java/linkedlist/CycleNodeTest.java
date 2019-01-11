@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * 链表题目练习
  */
-public class NodeTest2 {
+public class CycleNodeTest {
 
     /**
      * 测试1：判断链表是不是环形
