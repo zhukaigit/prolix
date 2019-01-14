@@ -1,4 +1,4 @@
-package com.zk.springbootswagger2.config;
+package com.zk.springbootswagger2.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 /**
  * Swagger-ui.html访问URL为：http://{host}:{port}/{contextPath}/{dispatch-servlet-url}/swagger-ui.html
  * 注意：需要对Swagger2的静态资源访问路径添加对应的映射，
- * 见{@link com.zk.springbootswagger2.config.WebMvcConfig#addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry)}
+ * 见{@link WebMvcConfig#addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry)}
  *
  *
  * 若访问时，弹出以下窗口

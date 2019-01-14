@@ -26,10 +26,10 @@ public class AppTest {
     ExecutorService executorService = Executors.newFixedThreadPool(3);
     for (int i = 0; i < 10; i++) {
       executorService.execute(() -> {
-        MDC.put("uniqueKey", UUID.randomUUID().toString());
+        MDC.put("traceId", UUID.randomUUID().toString());
         service1();
         try {
-          Thread.sleep(Long.valueOf(new Random().nextInt(5)*1000));
+          Thread.sleep((long) (new Random().nextInt(5) * 1000));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }

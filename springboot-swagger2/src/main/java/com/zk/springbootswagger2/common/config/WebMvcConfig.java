@@ -1,4 +1,4 @@
-package com.zk.springbootswagger2.config;
+package com.zk.springbootswagger2.common.config;
 
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
