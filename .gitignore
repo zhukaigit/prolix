@@ -9,4 +9,4 @@ bin/
 *.cmd
 mvnw
 .mvn/
-/logs/
+logs/

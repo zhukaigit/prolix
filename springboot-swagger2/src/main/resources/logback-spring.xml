@@ -3,7 +3,7 @@
   <property name="LOG_HOME" value="logs"/>
   <property name="encoding" value="UTF-8"/>
 
-  <appender name="DEFAULT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${LOG_HOME}/springboot-swagger2.log</file>
     <Append>true</Append>
     <prudent>false</prudent>
@@ -23,9 +23,21 @@
     </encoder>
   </appender>
 
-  <!-- 日志输出级别 -->
-  <root level="DEBUG">
-    <appender-ref ref="DEFAULT"/>
-    <appender-ref ref="STDOUT"/>
-  </root>
+  <!--开发环境:打印控制台-->
+  <springProfile name="dev">
+    <root level="DEBUG">
+      <appender-ref ref="STDOUT"/>
+    </root>
+    <!--<logger name="com.zk.job" level="debug"/>-->
+  </springProfile>
+
+  <!--线上环境:打印控制台-->
+  <springProfile name="prod">
+    <root level="DEBUG">
+      <appender-ref ref="FILE"/>
+      <appender-ref ref="STDOUT"/>
+    </root>
+    <!--<logger name="com.zk.job" level="info"/>-->
+  </springProfile>
+
 </configuration>
