@@ -35,6 +35,7 @@ public class RequestLogFilter extends AbstractRequestLoggingFilter {
     @Override
     protected void beforeRequest(HttpServletRequest request, String message) {
         // 给每个请求新增唯一的追踪标识
+        // 同时logback.xml文件中用"%X{traceId}"来匹配输出
         MDC.put("traceId", UUID.randomUUID().toString());
         log.info(message);
     }
