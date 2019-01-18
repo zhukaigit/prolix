@@ -163,6 +163,13 @@
             <version>9.3.1</version>
         </dependency>
 
+        <!-- mongodb驱动包 -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.8.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>
