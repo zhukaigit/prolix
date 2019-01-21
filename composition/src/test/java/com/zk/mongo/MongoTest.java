@@ -199,6 +199,11 @@ public class MongoTest {
     print(distinct);
   }
 
+  /**
+   * 修改符合条件的所有记录
+   *
+   * 注意：updateOne()
+   */
   @Test
   public void testUpdate() {
     System.out.println("============= 原始数据 =============");
