@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -229,6 +231,7 @@ public class MongoUpdateTest {
 
   /**
    * 拥有类似事务特性的更新与查询操作
+   * 一次最多只更新一个文档，也就是条件query条件，且执行sort后的第一个文档
    *
    * db.COLLECTION_NAME.findAndModify({
    *    query:{}, update:{}, remove:true|false, new:true|false, sort:{}, fields:{}, upsert:true|false
@@ -242,8 +245,61 @@ public class MongoUpdateTest {
    * fields:投影操作，与find*的第二个参数一致。
    * upsert:与update的upsert参数一样。
    */
-  public void findAndModifyTest() {
-//    mongoTemplate.findAndModify();
+  @Test
+  public void findAndModifyTest1() {
+    Query query = Query.query(Criteria.where("name").is("zhukai"));
+    Update update = new Update()
+            .set("name", "zk");
+
+    FindAndModifyOptions options = FindAndModifyOptions.options()
+            .returnNew(true)
+            .upsert(true);
+    TestUpdateModel modify = mongoTemplate.findAndModify(query, update, options, TestUpdateModel.class);
+    System.err.println("更新结果：" + JsonUtils.toJsonHasNullKey(modify));
+  }
+  @Test
+  public void findAndModifyTest2() {
+    Query query = Query.query(Criteria.where("name").is("zk"));
+    Update update = new Update()
+            .set("name", "i'm new");
+
+    FindAndModifyOptions options = FindAndModifyOptions.options()
+            .returnNew(true)
+            .upsert(true);
+    TestUpdateModel modify = mongoTemplate.findAndModify(query, update, options, TestUpdateModel.class);
+    System.err.println("更新结果：" + JsonUtils.toJsonHasNullKey(modify));
+  }
+
+  /**
+   * 乐观锁测试1
+   */
+  @Test
+  public void testOptimisticLocking1() {
+    Query query = Query.query(Criteria.where("name").is("zhukai"));
+    TestUpdateModel model = mongoTemplate.findOne(query, TestUpdateModel.class);
+    TestUpdateModel temp = mongoTemplate.findOne(query, TestUpdateModel.class);
+    model.setName("new name");
+    mongoTemplate.save(model);
+
+    try {
+      // throws OptimisticLockingFailureException
+      mongoTemplate.save(temp);
+    } catch (Exception e) {
+      System.err.println("错误信息：" + e);
+    }
+  }
+
+  /**
+   * 乐观锁测试2
+   */
+  @Test
+  public void testOptimisticLocking2() {
+    Query query = Query.query(Criteria.where("name").is("zhukai"));
+    TestUpdateModel temp = mongoTemplate.findOne(query, TestUpdateModel.class);
+
+    mongoTemplate.updateMulti(query, Update.update("name", "new name"), TestUpdateModel.class);
+
+    mongoTemplate.save(temp);
   }
 
   @Document("test_update_model")
@@ -261,6 +317,8 @@ public class MongoUpdateTest {
     private Double minField;
     @Indexed(unique = true)
     private String name;
+    @Version
+    private Long version;
   }
 
 
