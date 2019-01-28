@@ -1,28 +1,28 @@
 package com.zk.springbootswagger2.mongo.config;
 
-import com.google.common.collect.Lists;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.convert.CustomConversions;
-import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+/**
+ * 官网：https://docs.spring.io/spring-data/mongodb/docs/2.1.4.RELEASE/reference/html/#mongo-template.type-mapping
+ */
 @Configuration
-//@ImportResource(locations = "classpath:local.properties")
-@EnableMongoRepositories(basePackages = {
-    "com.zk.springbootswagger2.mongo.repository"}, mongoTemplateRef = "mongoTemplate")
-public class MainMongoDBConfig extends MongoDBConfig {
+@PropertySource("classpath:mongo.properties")
+@EnableMongoRepositories(basePackages = {"com.zk.springbootswagger2.mongo.repository"},
+    mongoTemplateRef = "mongoTemplate")
+public class MyMongoDBConfig {
 
   @Value("${mongo.config.maindb}")
   private String db;
@@ -57,17 +57,8 @@ public class MainMongoDBConfig extends MongoDBConfig {
   @Value("${mongo.uri}")
   private String uri;
 
-//    @Autowired(required = false)
-//    private MongoCommandListener mongoCommandListener;
-
-  @Override
-  protected String getDatabaseName() {
-    return this.db;
-  }
-
-  @Override
-  protected Mongo mongo() throws Exception {
-    uri = String.format(uri, db);
+//  @Bean
+  public MongoClient mongoClient() {
     MongoClientOptions.Builder builder = MongoClientOptions.builder()
         .connectionsPerHost(connectionsPerHost)
         .threadsAllowedToBlockForConnectionMultiplier(threadsAllowedToBlockForConnectionMultiplier)
@@ -76,37 +67,22 @@ public class MainMongoDBConfig extends MongoDBConfig {
         .heartbeatFrequency(heartbeatFrequency)
         .maxConnectionIdleTime(maxConnectionIdleTime)
         .maxWaitTime(maxWaitTime)
-        .socketKeepAlive(isSocketKeepAlive)
+//        .socketKeepAlive(isSocketKeepAlive)  // 已废弃，默认true
         .socketTimeout(socketTimeout)
         .readPreference(ReadPreference.primaryPreferred())
         .writeConcern(WriteConcern.FSYNCED);
-//        builder = Objects.nonNull(mongoCommandListener) ? builder.addCommandListener(mongoCommandListener) : builder;
     MongoClientURI mongoClientURI = new MongoClientURI(uri, builder);
     return new MongoClient(mongoClientURI);
   }
 
-  @Override
   @Bean
-  public CustomConversions customConversions() {
-    List<Converter> converters = Lists.newArrayList();
-    return new CustomConversions(converters);
+  public MongoDbFactory mongoDbFactory() {
+    return new SimpleMongoDbFactory(mongoClient(), db);
   }
 
-  @Override
-  @Bean
-  protected MongoMappingContext mongoMappingContext() throws ClassNotFoundException {
-    return super.mongoMappingContext();
-  }
-
-  @Override
-  @Bean(name = "matrixConverter")
-  public MappingMongoConverter mappingMongoConverter() throws Exception {
-    return super.mappingMongoConverter();
-  }
-
-  @Bean
-  public MongoTemplate mongoTemplate() throws Exception {
-    return new MongoTemplate(mongoDbFactory(), mappingMongoConverter());
+  @Bean("mongoTemplate")
+  public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory) {
+    return new MongoTemplate(mongoDbFactory);
   }
 
 }
