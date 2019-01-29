@@ -6,7 +6,10 @@ import com.zk.springbootswagger2.mongo.entity.PersonInfo;
 import com.zk.springbootswagger2.mongo.entity.PersonInfo.Toy;
 import com.zk.springbootswagger2.mongo.repository.PersonInfoRepository;
 import com.zk.springbootswagger2.utils.JsonUtils;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Before;
@@ -47,6 +50,7 @@ public class PersonInfoRepositoryTest {
             Toy.builder().name("小狗").price(12.8).build(),
             Toy.builder().name("小猪").price(5.8).build()
         ))
+        .salary(new BigDecimal(99.18))
         .build();
 
     PersonInfo save = personInfoRepository.save(p1);
@@ -118,4 +122,53 @@ public class PersonInfoRepositoryTest {
         .findOne(Example.of(PersonInfo.builder().name("zhukai").build()));
     System.out.println("查询结果：" + personInfoOptional.get());
   }
+
+  /**
+   * 测试：使用@Query注解查询
+   * @org.springframework.data.mongodb.repository.Query
+   */
+  @Test
+  public void testWithQueryAnnotation() {
+    PersonInfo p1 = PersonInfo.builder()
+        .name("zk")
+        .channel("jsy")
+        .birthday(new Date())
+        .favourites(new String[]{"read", "swimming"})
+        .toys(Lists.newArrayList(
+            Toy.builder().name("小狗").price(12.8).build(),
+            Toy.builder().name("小猪").price(5.8).build()
+        ))
+        .build();
+    PersonInfo save = personInfoRepository.save(p1);
+
+    HashMap<String, Object> param = new HashMap<>();
+    param.put("name", "zk");
+    param.put("channel", "CSCI");
+    List<HashMap> list = personInfoRepository
+        .findByNameOrChannelWithAnnotation(param);
+    System.err.println("查询结果：" + JsonUtils.toJsonHasNullKey(list));
+
+  }
+
+  @Test
+  public void testConverter() {
+    PersonInfo p1 = PersonInfo.builder()
+        .name("zk")
+        .channel("jsy")
+        .birthday(new Date())
+        .favourites(new String[]{"read", "swimming"})
+        .toys(Lists.newArrayList(
+            Toy.builder().name("小狗").price(12.8).build(),
+            Toy.builder().name("小猪").price(5.8).build()
+        ))
+        .salary(new BigDecimal(200.15).setScale(2, RoundingMode.HALF_UP))
+        .build();
+    PersonInfo save = personInfoRepository.save(p1);
+
+    List<PersonInfo> list = mongoTemplate
+        .find(Query.query(Criteria.where("salary").gt(new BigDecimal(100))), PersonInfo.class);
+    System.err.println("查询结果：" + JsonUtils.toJsonHasNullKey(list));
+
+  }
+
 }

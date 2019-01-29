@@ -45,6 +45,8 @@ import java.util.List;
  * 1、selects the documents where the value of the field is not equal to the specified value.
  * 2、the field does not exist.
  *
+ * $regex：参考 <a href="https://docs.mongodb.com/manual/reference/operator/query/regex/#syntax-restrictions"></a>
+ *
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)

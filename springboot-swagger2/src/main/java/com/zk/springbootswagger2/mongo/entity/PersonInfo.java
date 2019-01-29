@@ -1,6 +1,7 @@
 package com.zk.springbootswagger2.mongo.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import lombok.Builder;
@@ -34,6 +35,7 @@ public class PersonInfo {
   private String[] favourites;
   private List<Toy> toys;
   private String newField;
+  private BigDecimal salary;
 
   // 玩具
   @Data

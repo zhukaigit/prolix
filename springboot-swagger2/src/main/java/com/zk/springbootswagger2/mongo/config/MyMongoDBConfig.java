@@ -5,14 +5,20 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.zk.springbootswagger2.mongo.converter.BigDecimalToDecimal128Converter;
+import com.zk.springbootswagger2.mongo.converter.Decimal128ToBigDecimalConverter;
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
-import org.springframework.data.mongodb.core.convert.MongoConverter;
+import org.springframework.data.mongodb.core.convert.DbRefResolver;
+import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
@@ -22,7 +28,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @PropertySource("classpath:mongo.properties")
 @EnableMongoRepositories(basePackages = {"com.zk.springbootswagger2.mongo.repository"},
     mongoTemplateRef = "mongoTemplate")
-public class MyMongoDBConfig {
+public class MyMongoDBConfig extends AbstractMongoConfiguration {
 
   @Value("${mongo.config.maindb}")
   private String db;
@@ -57,7 +63,12 @@ public class MyMongoDBConfig {
   @Value("${mongo.uri}")
   private String uri;
 
-//  @Bean
+  @Override
+  protected String getDatabaseName() {
+    return db;
+  }
+
+  @Bean
   public MongoClient mongoClient() {
     MongoClientOptions.Builder builder = MongoClientOptions.builder()
         .connectionsPerHost(connectionsPerHost)
@@ -75,14 +86,23 @@ public class MyMongoDBConfig {
     return new MongoClient(mongoClientURI);
   }
 
+  @Override
   @Bean
-  public MongoDbFactory mongoDbFactory() {
-    return new SimpleMongoDbFactory(mongoClient(), db);
+  public MappingMongoConverter mappingMongoConverter() throws Exception {
+    DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
+    MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext());
+    // 添加自定义转换器
+    ArrayList<Converter> list = new ArrayList<>();
+    list.add(new BigDecimalToDecimal128Converter());
+    list.add(new Decimal128ToBigDecimalConverter());
+    converter.setCustomConversions(new MongoCustomConversions(list));
+    return converter;
   }
 
+  @Override
   @Bean("mongoTemplate")
-  public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory) {
-    return new MongoTemplate(mongoDbFactory);
+  public MongoTemplate mongoTemplate() throws Exception {
+    return new MongoTemplate(mongoDbFactory(), mappingMongoConverter());
   }
 
 }
