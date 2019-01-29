@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
@@ -103,6 +104,11 @@ public class MyMongoDBConfig extends AbstractMongoConfiguration {
   @Bean("mongoTemplate")
   public MongoTemplate mongoTemplate() throws Exception {
     return new MongoTemplate(mongoDbFactory(), mappingMongoConverter());
+  }
+
+  @Bean
+  MongoTransactionManager transactionManager() {
+    return new MongoTransactionManager(mongoDbFactory());
   }
 
 }

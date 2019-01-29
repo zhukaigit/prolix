@@ -258,5 +258,171 @@ zhukais-MacBook-Pro:4.0.5 zhukai$
   >
   ```
 
-  
+
+### 复制集创建
+
+1. 创建3个文件夹：
+
+   ```
+   mkdir /usr/local/Cellar/mongodb/4.0.5/replSet1/
+   mkdir /usr/local/Cellar/mongodb/4.0.5/replSet2/
+   mkdir /usr/local/Cellar/mongodb/4.0.5/replSet3/
+   ```
+
+   在replSet1、replSet2、replSet3文件夹下都分别创建log，data，conf文件夹。
+
+   **解释**：
+
+   log：存放为各个复制集下的日志文件
+
+   data：存放数据
+
+   conf：新建一个mongo.conf文件，用于启动配置
+
+2. 各个mongo.conf配置文件如下：
+
+   ```conf
+   # /usr/local/Cellar/mongodb/4.0.5/replSet1/conf/mongo.conf配置如下：
+   port = 12345
+   logpath = /usr/local/Cellar/mongodb/4.0.5/replSet1/log/mongo.log
+   dbpath = /usr/local/Cellar/mongodb/4.0.5/replSet1/data/
+   fork = true
+   replSet = rs2
+   
+   # /usr/local/Cellar/mongodb/4.0.5/replSet2/conf/mongo.conf配置如下：
+   port = 12346
+   logpath = /usr/local/Cellar/mongodb/4.0.5/replSet2/log/mongo.log
+   dbpath = /usr/local/Cellar/mongodb/4.0.5/replSet2/data/
+   fork = true
+   replSet = rs2
+   
+   # /usr/local/Cellar/mongodb/4.0.5/replSet1/conf/mongo.conf配置如下：
+   port = 12347
+   logpath = /usr/local/Cellar/mongodb/4.0.5/replSet3/log/mongo.log
+   dbpath = /usr/local/Cellar/mongodb/4.0.5/replSet3/data/
+   fork = true
+   replSet = rs2
+   ```
+
+3. 启动其中任意一个服务
+
+4. mongo客户端连接，切换到admin数据库。执行如下命令：
+
+   ```bash
+   rs.initiate({
+     _id: 'rs2',
+     members: [
+       {
+         _id: 0,
+         host: 'localhost: 12345'
+       },
+       {
+         _id: 1,
+         host: 'localhost: 12346'
+       },
+       {
+         _id: 2,
+         host: 'localhost: 12347'
+       }
+     ]
+   })
+   ```
+
+5. 复制集常用方法总结
+
+   **rs.initiate()**：复制集初始化，例如：rs.initiate({_id:'repl1',members:[{_id:1,host:'192.168.168.129:27017'}]}) 
+   **rs.reconfig()**：重新加载配置文件，例如：
+
+   rs.reconfig({_id:'repl1',members:[{_id:1,host:'192.168.168.129:27017'}]},{force:true})当只剩下一个secondary节点时，复制集变得不可用，则可以指定force属性强制将节点变成primary，然后再添加secondary节点
+   **rs.status()**：查看复制集状态 
+   **db.printSlaveReplicationInfo()**：查看复制情况 
+   **rs.conf()/rs.config()**：查看复制集配置 
+   **rs.slaveOk()**：在当前连接让secondary可以提供读操作 
+   **rs.add()**：增加复制集节点，例如：
+
+   rs.add('192.168.168.130:27017')
+   rs.add({"_id":3,"host":"192.168.168.130:27017","priority":0,"hidden":true})指定hidden属性添加备份节点
+   rs.add({"_id":3,"host":"192.168.168.130:27017","priority":0,"slaveDelay":60})指定slaveDelay属性添加延迟节点
+   priority：是优先级，默认为1，如果想手动指定某个节点为primary节点，则把对应节点的priority属性设置为所有节点中最大的一个即可
+   **rs.remove()**：删除复制集节点，例如：rs.remove('192.168.168.130:27017') 
+   **rs.addArb()**：添加仲裁节点，例如：
+
+   rs.addArb('192.168.168.131:27017')或者rs.add({"_id":3,"host":"192.168.168.130:27017","arbiterOnly":true})，仲裁节点，只参与投票，不接收数据
+
+### readConcern、readPreference、writeConcern 原理解析
+
+1. **writeConcern**
+
+   **MongoDB支持的WriteConncern选项如下**
+
+   1. w: <number>，数据写入到number个节点才向用客户端确认
+      - {w: 0} 对客户端的写入不需要发送任何确认，适用于性能要求高，但不关注正确性的场景
+      - {w: 1} 默认的writeConcern，数据写入到Primary就向客户端发送确认
+      - {w: "majority"} 数据写入到副本集大多数成员后向客户端发送确认，适用于对数据安全性要求比较高的场景，该选项会降低写入性能
+   2. j: <boolean> ，写入操作的journal持久化后才向客户端确认
+      - 默认为"{j: false}，如果要求Primary写入持久化了才向客户端确认，则指定该选项为true
+   3. wtimeout: <millseconds>，写入超时时间，仅w的值大于1时有效。
+      - 当指定{w: }时，数据需要成功写入number个节点才算成功，如果写入过程中有节点故障，可能导致这个条件一直不能满足，从而一直不能向客户端发送确认结果，针对这种情况，客户端可设置wtimeout选项来指定超时时间，当写入过程持续超过该时间仍未结束，则认为写入失败。
+
+   **{w : "majority"}解析**
+
+   {w: 1}、{j: true}等writeConcern选项很好理解，Primary等待条件满足发送确认；但{w: "majority"}则相对复杂些，需要确认数据成功写入到大多数节点才算成功，而MongoDB的复制是通过Secondary不断拉取oplog并重放来实现的，并不是Primary主动将写入同步给Secondary，那么Primary是如何确认数据已成功写入到大多数节点的？
+
+   1. Client向Primary发起请求，指定writeConcern为{w: "majority"}，Primary收到请求，本地写入并记录写请求到oplog，然后等待大多数节点都同步了这条/批oplog（Secondary应用完oplog会向主报告最新进度)。
+   2. Secondary拉取到Primary上新写入的oplog，本地重放并记录oplog。为了让Secondary能在第一时间内拉取到主上的oplog，find命令支持一个[awaitData的选项](https://docs.mongodb.com/manual/reference/command/find/#dbcmd.find)，当find没有任何符合条件的文档时，并不立即返回，而是等待最多maxTimeMS(默认为2s)时间看是否有新的符合条件的数据，如果有就返回；所以当新写入oplog时，备立马能获取到新的oplog。
+   3. Secondary上有单独的线程，当oplog的最新时间戳发生更新时，就会向Primary发送replSetUpdatePosition命令更新自己的oplog时间戳。
+   4. 当Primary发现有足够多的节点oplog时间戳已经满足条件了，向客户端发送确认。
+
+2. **readConcern vs readPreference**
+
+MongoDB 可以通过 [writeConcern](https://yq.aliyun.com/articles/54367?spm=5176.100239.blogcont60553.7.InidvP) 来定制写策略，3.2版本后又引入了 `readConcern` 来灵活的定制读策略。
+
+- [readPreference](https://docs.mongodb.com/manual/core/read-preference/?spm=5176.100239.blogcont60553.8.InidvP) 主要控制客户端 Driver 从复制集的哪个节点读取数据，这个特性可方便的实现读写分离、就近读取等策略。
+  - `primary` 只从 primary 节点读数据，这个是默认设置
+  - `primaryPreferred` 优先从 primary 读取，primary 不可服务，从 secondary 读
+  - `secondary` 只从 scondary 节点读数据
+  - `secondaryPreferred` 优先从 secondary 读取，没有 secondary 成员时，从 primary 读取
+  - `nearest` 根据网络距离就近读取
+- [readConcern](https://docs.mongodb.com/manual/reference/read-concern/?spm=5176.100239.blogcont60553.9.InidvP) 决定到某个读取数据时，能读到什么样的数据。
+  - `local` 能读取任意数据，这个是默认设置
+  - `majority` 只能读取到『成功写入到大多数节点的数据』
+
+### readConcern 解决什么问题？
+
+`readConcern` 的初衷在于解决『脏读』的问题，比如用户从 MongoDB 的 primary 上读取了某一条数据，但这条数据并没有同步到大多数节点，然后 primary 就故障了，重新恢复后 这个primary 节点会将未同步到大多数节点的数据回滚掉，导致用户读到了『脏数据』。
+
+当指定 readConcern 级别为 majority 时，能保证用户读到的数据『已经写入到大多数节点』，而这样的数据肯定不会发生回滚，避免了脏读的问题。
+
+需要注意的是，`readConcern` 能保证读到的数据『不会发生回滚』，但并不能保证读到的数据是最新的，这个官网上也有说明。
+
+```
+Regardless of the read concern level, the most recent data on a node may not reflect the most recent version of the data in the system.
+```
+
+有用户误以为，`readConcern` 指定为 majority 时，客户端会从大多数的节点读取数据，然后返回最新的数据。
+
+实际上并不是这样，无论何种级别的 `readConcern`，客户端都只会从『某一个确定的节点』（具体是哪个节点由 readPreference 决定）读取数据，该节点根据自己看到的同步状态视图，只会返回已经同步到大多数节点的数据。
+
+### readConcern 实现原理
+
+MongoDB 要支持 majority 的 readConcern 级别，必须设置`replication.enableMajorityReadConcern`参数，加上这个参数后，MongoDB 会起一个单独的snapshot 线程，会周期性的对当前的数据集进行 snapshot，并记录 snapshot 时最新 oplog的时间戳，得到一个映射表。
+
+| 最新 oplog 时间戳 | snapshot  | 状态        |
+| ----------------- | --------- | ----------- |
+| t0                | snapshot0 | committed   |
+| t1                | snapshot1 | uncommitted |
+| t2                | snapshot2 | uncommitted |
+| t3                | snapshot3 | uncommitted |
+
+只有确保 oplog 已经同步到大多数节点时，对应的 snapshot 才会标记为 commmited，用户读取时，从最新的 commited 状态的 snapshot 读取数据，就能保证读到的数据一定已经同步到的大多数节点。
+
+关键的问题就是如何确定『oplog 已经同步到大多数节点』？
+
+primary 节点
+
+secondary 节点在 自身oplog发生变化时，会通过 replSetUpdatePosition 命令来将 oplog 进度立即通知给 primary，另外心跳的消息里也会包含最新 oplog 的信息；通过上述方式，primary 节点能很快知道 oplog 同步情况，知道『最新一条已经同步到大多数节点的 oplog』，并更新 snapshot 的状态。比如当t2已经写入到大多数据节点时，snapshot1、snapshot2都可以更新为 commited 状态。（不必要的 snapshot也会定期被清理掉）
+
+secondary 节点
+
+secondary 节点拉取 oplog 时，primary 节点会将『最新一条已经同步到大多数节点的 oplog』的信息返回给 secondary 节点，secondary 节点通过这个oplog时间戳来更新自身的 snapshot 状态。
 
