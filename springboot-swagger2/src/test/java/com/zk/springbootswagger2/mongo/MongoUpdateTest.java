@@ -1,7 +1,12 @@
 package com.zk.springbootswagger2.mongo;
 
+import com.google.common.collect.Lists;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 import com.zk.springbootswagger2.utils.JsonUtils;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
@@ -21,10 +26,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Update.Position;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -300,6 +301,109 @@ public class MongoUpdateTest {
     mongoTemplate.updateMulti(query, Update.update("name", "new name"), TestUpdateModel.class);
 
     mongoTemplate.save(temp);
+  }
+
+  /**
+   * 测试 update的$
+   *
+   * The positional $ operator acts as a placeholder for the first match of the update query document.
+   *
+   * 注意：You must include the array field as part of the query document.
+   *
+   * $相当于数组中所有元素的占位符
+   */
+  @Test
+  public void testUpdate$1() {
+    String collectionName = "grade";
+    mongoTemplate.dropCollection(collectionName);
+    /**
+     * 准备数据
+     * { "_id" : 1, "grades" : [ 95, 95, 90 ] }
+     * { "_id" : 2, "grades" : [ 98, 100, 102 ] }
+     * { "_id" : 3, "grades" : [ 95, 110, 100 ] }
+     */
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 1, \"grades\" : [ 95, 95, 90 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 2, \"grades\" : [ 98, 100, 102 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 3, \"grades\" : [ 95, 110, 100 ] }", String.class, Object.class), collectionName);
+
+    // 更新
+    org.bson.Document updateDocument = new org.bson.Document(
+        "$set", new org.bson.Document("grades.$", 80)
+    );
+    UpdateResult updateResult = mongoTemplate.updateMulti(
+        Query.query(Criteria.where("grades").is(95)),
+        Update.fromDocument(updateDocument),
+        collectionName
+    );
+    System.err.println("更新结果：" + JsonUtils.toJsonHasNullKey(updateResult));
+  }
+
+  /**
+   * 测试 update的$[]
+   *
+   * $[]相当于数组中所有元素的占位符
+   */
+  @Test
+  public void testUpdate$2() {
+    String collectionName = "grade";
+    mongoTemplate.dropCollection(collectionName);
+    /**
+     * 准备数据
+     * { "_id" : 1, "grades" : [ 95, 92, 90 ] }
+     * { "_id" : 2, "grades" : [ 98, 100, 102 ] }
+     * { "_id" : 3, "grades" : [ 95, 110, 100 ] }
+     */
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 1, \"grades\" : [ 95, 92, 90 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 2, \"grades\" : [ 98, 100, 102 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 3, \"grades\" : [ 95, 110, 100 ] }", String.class, Object.class), collectionName);
+
+    // 更新
+    org.bson.Document updateDocument = new org.bson.Document(
+        "$inc", new org.bson.Document("grades.$[]", 2)
+    );
+    UpdateResult updateResult = mongoTemplate.updateMulti(
+        new Query(),
+        Update.fromDocument(updateDocument),
+        collectionName
+    );
+    System.err.println("更新结果：" + JsonUtils.toJsonHasNullKey(updateResult));
+  }
+
+  /**
+   * 测试：$[identified]
+   *
+   * $[identified]相当于数组中满足arrayFilters条件的元素的占位符
+   *
+   * 只更新grades数组中值大于或等于100的元素
+   */
+  @Test
+  public void testUpdate$3() {
+    String collectionName = "grade";
+    mongoTemplate.dropCollection(collectionName);
+    /**
+     * 准备数据
+     * { "_id" : 1, "grades" : [ 95, 92, 90 ] }
+     * { "_id" : 2, "grades" : [ 98, 100, 102 ] }
+     * { "_id" : 3, "grades" : [ 95, 110, 100 ] }
+     */
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 1, \"grades\" : [ 95, 92, 90 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 2, \"grades\" : [ 98, 100, 102 ] }", String.class, Object.class), collectionName);
+    mongoTemplate.save(JsonUtils.toMap("{ \"_id\" : 3, \"grades\" : [ 95, 110, 100 ] }", String.class, Object.class), collectionName);
+
+    // 更新
+    org.bson.Document updateDocument = new org.bson.Document(
+        "$inc", new org.bson.Document("grades.$[score]", 2)
+    );
+    UpdateOptions updateOptions = new UpdateOptions().upsert(false)
+        .arrayFilters(Lists.newArrayList(
+            new org.bson.Document("score", new org.bson.Document("$gte", 100))
+        ));
+    UpdateResult updateResult = mongoTemplate.getDb().getCollection(collectionName).updateMany(
+        new org.bson.Document(),
+        updateDocument,
+        updateOptions
+    );
+    System.err.println("更新结果：" + JsonUtils.toJsonHasNullKey(updateResult));
   }
 
   @Document("test_update_model")
