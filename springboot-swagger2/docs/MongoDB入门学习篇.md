@@ -1,4 +1,4 @@
-## MongoDB入门学习篇
+# MongoDB入门学习篇
 
 ### mac上Mongod服务搭建
 
@@ -450,3 +450,63 @@ secondary 节点拉取 oplog 时，primary 节点会将『最新一条已经同�
 
 - 配置服务器是一个普通的mongod进程，所以只需要新开一个实例即可。**配置服务器必须开启1个或则3个，开启2个则会报错**
 - 路由服务器不保存数据，把日志记录一下即可。
+
+
+
+## 权限管理
+
+### 创建用户
+
+1. mongo服务无认证启动。
+
+2. 客户端连接后，进入admin数据库，执行如下命令：
+
+   **创建root用户**：db.createUser({"user":"root", "pwd":"root", "roles":["root"]})
+
+   **创建所有数据库的管理员**：db.createUser({"user":"admin", "pwd":"admin", "roles":["userAdminAnyDatabase"]})
+
+3. 以认证方式重启启动，如下：
+
+   ```
+   ps -ef | grep mongo
+   kill -9 mongo服务进程id
+   mongod -f conf/mongod.conf --auth
+   ```
+
+4. 客户端连接后，进入admin数据库，执行`db.auth("admin", "admin")`进行认证，然后再进入对应数据库，如loanbiz来创建对应角色的用户
+
+   1. 创建**userAdmin**角色的用户
+
+      db.createUser({"user":"loanbiz_userAdmin", "pwd":"123456", "roles":[{"role":"userAdmin", "db":"loanbiz"}]})
+
+   2. 创建**dbAdmin**角色的用户
+
+      db.createUser({"user":"loanbiz_dbAdmin", "pwd":"123456", "roles":[{"role":"dbAdmin", "db":"loanbiz"}]})
+
+   3. 创建**dbOwner**角色的用户
+
+      db.createUser({"user":"loanbiz_dbOwner", "pwd":"123456", "roles":[{"role":"dbOwner", "db":"loanbiz"}]})
+
+5. 再次重启服务再连接之后，进入loanbiz数据库
+
+   1. 执行db.auth("loanbiz_userAdmin","123456")进行认证。loanbiz_userAdmin来创建用户
+
+      db.createUser({"user":"loanbiz_readWrite", "pwd":"123456", "roles":[{"role":"readWrite", "db":"loanbiz"}]})
+
+   2. 执行db.auth("loanbiz_dbOwner","123456")进行认证。loanbiz_dbOwner来创建用户
+
+      db.createUser({"user":"loanbiz_readWrite2", "pwd":"123456", "roles":[{"role":"readWrite", "db":"loanbiz"}]})
+
+### 查看当前库所有用户
+
+show users
+
+### 删除用户
+
+db.drop("userName")
+
+### 修改用户密码
+
+方式一：db.changeUserPassword("userName", "newPassword")
+
+方式二：db.updateUser("userName",{pwd:"newPassword"})

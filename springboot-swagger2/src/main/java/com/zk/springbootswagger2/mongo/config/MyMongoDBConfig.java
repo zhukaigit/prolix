@@ -71,6 +71,7 @@ public class MyMongoDBConfig extends AbstractMongoConfiguration {
 
   @Bean
   public MongoClient mongoClient() {
+    uri = String.format(uri, db);
     MongoClientOptions.Builder builder = MongoClientOptions.builder()
         .connectionsPerHost(connectionsPerHost)
         .threadsAllowedToBlockForConnectionMultiplier(threadsAllowedToBlockForConnectionMultiplier)
