@@ -134,11 +134,12 @@ public class MySkipList {
 
     private int data;
     private int maxLevel;
-    private SkipListNode[] forwards = new SkipListNode[MAX_LEVEL];
+    private SkipListNode[] forwards;
 
     public SkipListNode(int data, int maxLevel) {
       this.data = data;
       this.maxLevel = maxLevel;
+      this.forwards = new SkipListNode[maxLevel];
     }
 
     @Override
