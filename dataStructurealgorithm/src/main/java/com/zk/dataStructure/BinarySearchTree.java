@@ -1,157 +1,234 @@
-//package com.zk.dataStructure;
-//
-//import lombok.*;
-//
-//import java.util.Objects;
-//
-///**
-// * 二叉查找树
-// */
-//public class BinarySearchTree {
-//    private BSNote head = null;
-//
-//    /**
-//     * 插入节点一般为叶子节点
-//     * 思路：若新节点数据大于当前遍历的节点，且其右子节点不存在，则新节点作为右子节点插入，否则遍历其右子树；
-//     * 若新节点数据小于当前遍历的节点，且其左子节点不存在，则新节点作为左子节点插入，否则遍历其左子树；
-//     * 若新节点等于当前遍历节点，报错
-//     */
-//    public void insert(int t) {
-//        BSNote newNote = new BSNote(t, null, null);
-//        if (head == null) {
-//            head = newNote;
-//            return;
-//        }
-//
-//        BSNote cur = head;
-//        while (true) {
-//            if (t == cur.getData()) {
-//                throw new RuntimeException("数据已存在");
-//            } else if (t > cur.getData()) {
-//                if (cur.getRight() == null) {//若新节点数据大于当前节点数据，且当前节点的右子节点为null，则插入节点插入到当前节点的
-//                    cur.right = newNote;
-//                    return;
-//                } else {
-//                    cur = cur.getRight();
-//                }
-//            } else {
-//                if (cur.getLeft() == null) {
-//                    cur.left = newNote;
-//                    return;
-//                } else {
-//                    cur = cur.getLeft();
-//                }
-//            }
-//        }
-//    }
-//
-//    /**
-//     * 3种
-//     * @param t
-//     */
-//    public boolean delete(int t) {
-//        if (head == null) return false;
-//        BSNote cur = null;
-//        BSNote parent = null;
-//        if (head.getData() == t) {
-//            // TODO: 2018/11/26 删除
-//            delete(null, head);
-//        } else if (t > head.getData()) {
-//            parent = head;
-//            cur = parent.right;
-//        } else {
-//            parent = head;
-//            cur = parent.left;
-//        }
-//        while (true) {
-//            if (cur == null) return false;
-//            if (t == cur.getData()) {
-//                delete(parent, t);
-//                return true;
-//            } else if (t > cur.getData()) {
-//                parent = cur;
-//                cur = cur.right;
-//            } else {
-//                parent = cur;
-//                cur = cur.left;
-//            }
-//        }
-//    }
-//
-//    public boolean delete(BSNote parent, BSNote deleteNode) {
-//        Objects.requireNonNull(deleteNode, "入参deleteNode不能为null");
-//        BSNote nextNote = null;
-//        if (deleteNode.left == null && deleteNode.right == null) {
-//
-//        } else if (deleteNode.left == null && deleteNode.right != null) {
-//            nextNote = deleteNode.right;
-//        } else if (deleteNode.left != null && deleteNode.right == null) {
-//            nextNote = deleteNode.left;
-//        } else {
-//            BSNote minParent = deleteNode;
-//            BSNote min = deleteNode.right;
-//            if (min.left == null) {
-//                min.left = parent.left;
-//                minParent.left = null;
-//                minParent.right = null;
-//                nextNote = min;
-//            } else {
-//                while (min.left != null) {
-//                    parent = min;
-//                    min = min.left;
-//                }
-//                //删除min
-//                minParent.left = min.right;
-//            }
-//
-//        }
-//        if (parent == null) {
-//
-//        }
-//    }
-//
-//    public BSNote findMin(BSNote note) {
-//        if (note == null) return null;
-//        BSNote min = note;
-//        while (min.getLeft() != null) {
-//            min = min.getLeft();
-//        }
-//        return min;
-//    }
-//
-//    public BSNote findMax(BSNote note) {
-//        if (note == null) return null;
-//        BSNote max = note;
-//        while (max.getRight() != null) {
-//            max = max.getRight();
-//        }
-//        return max;
-//
-//    }
-//
-//
-//    public BSNote find(int t) {
-//        BSNote cur = head;
-//        while (true) {
-//            if (cur == null) return null;
-//            if (t == cur.getData()) {
-//                return cur;
-//            } else if (t > cur.getData()) {
-//                cur = cur.getRight();
-//            } else {
-//                cur = cur.getLeft();
-//            }
-//        }
-//    }
-//
-//    @Builder
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    @ToString
-//    @Getter
-//    public static class BSNote {
-//        private int data;
-//        private BSNote left;
-//        private BSNote right;
-//    }
-//}
+package com.zk.dataStructure;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * 二叉查找树
+ */
+public class BinarySearchTree {
+    private BSNode head = null;
+
+  public static void main(String[] args) {
+    BinarySearchTree tree = new BinarySearchTree();
+    for (int i = 10; i <= 20; i++) {
+      tree.insert(i);
+    }
+    for (int i = 9; i >= 1; i--) {
+      tree.insert(i);
+    }
+    System.out.println("原始数据如下：");
+    tree.printAll();
+
+    System.out.println("max : " + tree.findMax(tree.head));
+    System.out.println("min : " + tree.findMin(tree.head));
+    System.out.println("test find value = 9， node : " + tree.find(9));
+    System.out.println("head : " + tree.head);
+
+    System.out.println("============= delete ============");
+    for (int i = 2; i < 25; i += 4) {
+      boolean delete = tree.delete(i);
+      System.out.println("删除" + i + ": " + delete);
+      tree.printAll();
+    }
+  }
+
+    /**
+     * 插入节点一般为叶子节点
+     * 思路：若新节点数据大于当前遍历的节点，且其右子节点不存在，则新节点作为右子节点插入，否则遍历其右子树；
+     * 若新节点数据小于当前遍历的节点，且其左子节点不存在，则新节点作为左子节点插入，否则遍历其左子树；
+     * 若新节点等于当前遍历节点，报错
+     */
+    public void insert(int t) {
+      BSNode newNote = new BSNode(t, null, null);
+      if (head == null) {
+        head = newNote;
+        return;
+      }
+
+      BSNode cur = head;
+      // 终止条件，满足下面任意一个
+      boolean b1 = cur != null && t > cur.data && cur.right == null;
+      boolean b2 = cur != null && t < cur.data && cur.left == null;
+      while (!(b1 || b2)) {
+        if (t > cur.data) {
+          cur = cur.right;
+        } else if (t == cur.data) {
+          throw new RuntimeException("数据已存在：" + t);
+        } else {
+          cur = cur.left;
+        }
+        b1 = cur != null && t > cur.data && cur.right == null;
+        b2 = cur != null && t < cur.data && cur.left == null;
+      }
+
+      if (b1) {
+        cur.right = newNote;
+      } else {
+        cur.left = newNote;
+      }
+    }
+
+
+  public boolean delete(int obj) {
+    BSNode father = this.head;
+    if (father == null) return false;
+
+    // 删除头部节点
+    if (father.data == obj) {
+      BSNode left = head.left;
+      BSNode right = head.right;
+      if (left == null) {
+        head = right;
+        return true;
+      }
+      if (right == null) {
+        head = left;
+        return true;
+      }
+      head = left;
+      BSNode max = findMax(left);
+      max.right = right;
+      return true;
+    }
+
+    // 循环终止条件
+    boolean b1 = false, b2 = false;
+    while (father != null) {
+      b1 = father.left != null && father.left.data == obj;
+      b2 = father.right != null && father.right.data == obj;
+      if (b1 || b2) break;
+      father = obj > father.data ? father.right : father.left;
+    }
+
+    // 删除father的左节点
+    if (b1) {
+      deleteLeft(father);
+      return true;
+    }
+    // 删除father的右节点
+    if (b2) {
+      deleteRight(father);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 删除指定节点的左节点
+   */
+  private void deleteLeft(BSNode node) {
+    BSNode left = node.left.left;
+    BSNode right = node.left.right;
+    if (left == null) {
+      node.left = right;
+      return;
+    }
+    if (right == null) {
+      node.left = left;
+      return;
+    }
+    node.left = left;
+    BSNode max = findMax(left);
+    max.right = right;
+  }
+
+  /**
+   * 删除指定节点的右节点
+   */
+  private void deleteRight(BSNode node) {
+    BSNode left = node.right.left;
+    BSNode right = node.right.right;
+    if (left == null) {
+      node.right = right;
+      return;
+    }
+    if (right == null) {
+      node.right = left;
+      return;
+    }
+    node.right = left;
+    BSNode max = findMax(left);
+    max.right = right;
+  }
+
+  /**
+   * 查找指定节点中的最小节点
+   * @param node
+   * @return
+   */
+  public BSNode findMin(BSNode node) {
+    if (node == null) {
+      return null;
+    }
+    BSNode min = node;
+    while (min.getLeft() != null) {
+      min = min.getLeft();
+    }
+    return min;
+  }
+
+  /**
+   * 查找指定节点中的最大节点
+   */
+  public BSNode findMax(BSNode node) {
+    if (node == null) {
+      return null;
+    }
+    BSNode max = node;
+    while (max.getRight() != null) {
+      max = max.getRight();
+    }
+    return max;
+  }
+
+
+  public BSNode find(int t) {
+    BSNode cur = head;
+    while (cur != null) {
+      if (cur.data == t) {
+        return cur;
+      } else if (cur.data > t) {
+        cur = cur.left;
+      } else {
+        cur = cur.right;
+      }
+    }
+    return null;
+  }
+
+  public void printAll() {
+    StringBuilder result = new StringBuilder();
+    print(head, result);
+    System.out.println(result);
+  }
+
+  private void print(BSNode node, StringBuilder result) {
+    if (node == null) {
+      return;
+    }
+    print(node.left, result);
+    result.append(node.data).append("\t");
+    print(node.right, result);
+  }
+
+  @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @Getter
+  public static class BSNode {
+
+    private int data;
+    private BSNode left;
+    private BSNode right;
+
+    @Override
+    public String toString() {
+      return "BSNode{" +
+              "data=" + data +
+              '}';
+    }
+  }
+}
