@@ -81,7 +81,6 @@ public class MySkipList {
     int randomLevel = randomLevel();
     SkipListNode newNode = new SkipListNode(val, randomLevel);
 
-    SkipListNode[] prevNodeContainer = new SkipListNode[randomLevel];
     levelCount = levelCount > randomLevel ? levelCount : randomLevel;
     SkipListNode currentNode = head;
     for (int i = levelCount - 1; i >= 0; i--) {
@@ -89,14 +88,10 @@ public class MySkipList {
         currentNode = currentNode.forwards[i];
       }
       if (i < randomLevel) {
-        prevNodeContainer[i] = currentNode;
+        newNode.forwards[i] =
+            currentNode.forwards[i] == null ? null : currentNode.forwards[i].forwards[i];
+        currentNode.forwards[i] = newNode;
       }
-    }
-
-    SkipListNode[] forwards = newNode.forwards;
-    for (int i = 0; i < randomLevel; i++) {
-      forwards[i] = prevNodeContainer[i].forwards[i];
-      prevNodeContainer[i].forwards[i] = newNode;
     }
   }
 
@@ -110,7 +105,7 @@ public class MySkipList {
         System.out.print(forward.forwards[i].data + "\t");
         forward = forward.forwards[i];
       }
-//      System.out.print("第" + i + "层个数：【" + count + "】");
+      System.out.print("\t=========>第" + i + "层个数：【" + count + "】");
       System.out.println();
     }
 
