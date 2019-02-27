@@ -1,8 +1,8 @@
 package com.zk.dataStructure;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-// 小顶堆
 public class LinkedHeap {
 
   public static void main(String[] args) {
@@ -26,13 +26,20 @@ public class LinkedHeap {
   private HeapNode tail;
   // 大小顶堆标志
   private Classify flag;
+  @Getter
+  private int size;
 
   public LinkedHeap(Classify flag) {
     this.flag = flag;
   }
 
+  public int getTopValue() {
+    return head.data;
+  }
+
   // 插入元素
   public void insert(int data) {
+    size++;
     // 头节点判断
     if (head == null) {
       head = new HeapNode(data, null, null, null);
@@ -71,6 +78,7 @@ public class LinkedHeap {
 
   // 删除堆顶元素
   public int deleteHeapTop() {
+    size--;
     int result = head.data;
 
     // 校验是否只有一个元素
@@ -249,9 +257,22 @@ public class LinkedHeap {
     RIGHT // 右节点
   }
 
-  private enum Classify {
+  public enum Classify {
     SMALL, // 小顶堆
     BIG // 大顶堆
+  }
+
+  public void print() {
+    print(head);
+  }
+
+  private void print(HeapNode node) {
+    if (node == null) {
+      return;
+    }
+    System.out.println(node.data);
+    print(node.left);
+    print(node.right);
   }
 
   @AllArgsConstructor
