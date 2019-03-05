@@ -65,6 +65,7 @@
     <module>java8</module>
     <module>cryptography</module>
     <module>logback-test</module>
+    <module>springboot-test</module>
   </modules>
 
 </project>
