@@ -1,5 +1,13 @@
 # mysql数据库知识
 
+## 参考资源
+
+友情提示：按住command再点击链接跳转
+
+1. 数据库系列：https://www.cnblogs.com/Jtianlin/p/8868697.html
+2. 数据库架构：https://www.cnblogs.com/Jtianlin/p/8904129.html
+3. 数据库容量：https://www.cnblogs.com/Jtianlin/p/8904187.html
+
 ## 数据库三范式
 
 1. **第一范式**：数据库的每一列都是不可分割的，即具有原子性。
