@@ -70,4 +70,19 @@ public class TransactionTest {
     }
   }
 
+  @Test
+  public void testNested() {
+    transactionService.testNested("zk");
+  }
+
+  @Test
+  public void testNestedRollback() {
+    transactionService.testNestedRollback("zk");
+  }
+
+  @Test
+  public void testRequestNew() {
+    transactionService.testRequestNew("zk");
+  }
+
 }

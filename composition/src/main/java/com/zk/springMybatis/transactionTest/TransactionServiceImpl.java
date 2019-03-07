@@ -7,6 +7,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -64,7 +65,6 @@ public class TransactionServiceImpl implements TransactionService {
 //    throw new Exception("check error");
   }
 
-
   private void insertUser(String name) {
     UserInfo user = new UserInfo();
     user.setName(name);
@@ -80,6 +80,51 @@ public class TransactionServiceImpl implements TransactionService {
     } else if (proxyClass) {
       System.out.println("是jdk代理");
     }
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.NESTED)
+  public void insertUser2(String name) {
+    insertUser(name);
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void insertUser3(String name) {
+    insertUser(name);
+  }
+
+  /**
+   * 验证【Propagation.NESTED】需要随着外部事务的提交才能一起提交
+   * @param name
+   */
+  @Override
+  @Transactional
+  public void testNested(String name) {
+    TransactionService transactionService = beanFactory.getBean(TransactionService.class);
+    transactionService.insertUser2(name);
+    System.out.println("此时insertUser2()应该还没有提交");
+  }
+
+  /**
+   * 验证【Propagation.NESTED】需要随着外部事务的回滚而回滚
+   * @param name
+   */
+  @Override
+  @Transactional
+  public void testNestedRollback(String name) {
+    TransactionService transactionService = beanFactory.getBean(TransactionService.class);
+    transactionService.insertUser2(name);
+    System.out.println("此时insertUser2()应该还没有提交");
+    throw new RuntimeException("验证【Propagation.NESTED】需要随着外部事务的回滚而回滚");
+  }
+
+  @Override
+  @Transactional
+  public void testRequestNew(String name) {
+    TransactionService transactionService = beanFactory.getBean(TransactionService.class);
+    transactionService.insertUser3(name);
+    System.out.println("此时insertUser2()应该提交了");
   }
 
 }
