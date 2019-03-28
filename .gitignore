@@ -10,3 +10,4 @@ bin/
 mvnw
 .mvn/
 logs/
+*.hprof
