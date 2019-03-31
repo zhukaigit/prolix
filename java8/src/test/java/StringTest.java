@@ -83,6 +83,29 @@ public class StringTest {
 
     }
 
+    /**
+     * 在JDK1.6，intern()方法会把首次遇到的字符串实例复制到永久代，返回的也是永久代中这个字符串实例的引用。
+     * 而JDK1.7的intern()实现不会再复制实例，只是在常量池中记录首次出现的实例引用。
+     */
+    @Test
+    public void test() {
+        // "计算机软件"是首次出现
+        // 在JDK1.6测试时，返回false
+        // 在JDK1.7测试时，返回true
+        String s1 = new String(new char[]{'计','算','机','软', '件'});
+        System.out.println(s1.intern() == s1);
+
+        // "java"之前出现过
+        // 在JDK1.6测试时，返回false
+        // 在JDK1.7测试时，返回false
+        String s2 = new String(new char[]{'j','a','v','a'});
+        System.out.println(s2.intern() == s2);
+
+        // JDK1.7，因为出现过了，返回false
+        String s3 = new String(new char[]{'计','算','机','软', '件'});
+        System.out.println(s3.intern() == s3);
+    }
+
     private Object getValue(String s) {
         try {
             Field f = s.getClass().getDeclaredField("value");
