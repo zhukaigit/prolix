@@ -66,6 +66,7 @@
     <module>cryptography</module>
     <module>logback-test</module>
     <module>springboot-test</module>
+    <module>prolix-common</module>
   </modules>
 
 </project>
