@@ -2,6 +2,7 @@ package com.zk.lifeCycle;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
  * 这两个方法的第一个参数都是要处理的Bean对象，第二个参数都是Bean的name。返回值也都是要处理的Bean对象。这里要注意。
  */
 @Component
+@Profile ("springEvent")
 public class MyBeanPostProcessor implements BeanPostProcessor {
 
   public MyBeanPostProcessor() {
