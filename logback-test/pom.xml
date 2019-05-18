@@ -50,6 +50,19 @@
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
     </dependency>
+
+    <!-- logback 使用EvaluatorFilter过滤器额外需要依赖的jar包 -->
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler</artifactId>
+      <version>3.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+      <version>3.0.9</version>
+    </dependency>
+
   </dependencies>
 
   <build>
