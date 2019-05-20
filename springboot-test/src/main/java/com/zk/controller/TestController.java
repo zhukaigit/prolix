@@ -4,11 +4,11 @@ import com.zk.common.BaseRequest;
 import com.zk.common.BaseResponse;
 import com.zk.common.annotation.ResponseLog;
 import com.zk.utils.JsonUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.Map;
@@ -16,9 +16,11 @@ import java.util.Map;
 @RestController
 @Slf4j
 @ResponseLog
+@Api(tags = "测试操作类")
 public class TestController {
 
-    @RequestMapping ("/health")
+    @GetMapping ("/health")
+    @ApiOperation("健康检查")
     public String ok () {
         return "ok, time = " + new Date().toLocaleString();
     }
@@ -36,12 +38,17 @@ public class TestController {
     }
 
     @PostMapping ("/test/aop")
-    public BaseResponse<Map> testAop (boolean error, @RequestBody BaseRequest<Map> body) {
+    public BaseResponse<Map> testAop (
+            @RequestBody BaseRequest<Map> body,
+            @RequestHeader("error") boolean error
+    ) {
         log.info("请求体：{}", JsonUtils.toJsonHasNullKey(body));
         if (error) {
             int i = 1 / 0;
         }
         return BaseResponse.success(body.getData());
     }
+
+
 
 }

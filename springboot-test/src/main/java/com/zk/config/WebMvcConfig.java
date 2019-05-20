@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 @Configuration
@@ -22,7 +23,8 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         // 多个拦截器组成一个拦截器链
         // addPathPatterns 用于添加拦截规则
         // excludePathPatterns 用户排除拦截
-        registry.addInterceptor(beanFactory.getBean(AuthInterceptor.class)).addPathPatterns("/**");
+        registry.addInterceptor(beanFactory.getBean(AuthInterceptor.class))
+                .addPathPatterns("/api/**");
         super.addInterceptors(registry);
     }
 
@@ -46,4 +48,14 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     }
     // ================== 过滤器配置 - 结束 ==================
 
+    // swagger2
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        //增加swagger相关访问地址
+        registry
+                .addResourceHandler("/**/swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/swagger-ui.html");
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
 }
