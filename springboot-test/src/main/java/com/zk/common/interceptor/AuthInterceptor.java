@@ -20,7 +20,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
         HashMap<String, Object> map = new HashMap<>();
-        map.put("msg", "你无权限访问");
+        map.put("msg", "you are not allowed to access");
         map.put("dateTime", new Date().toLocaleString());
         response.getWriter().write(JsonUtils.toJsonHasNullKey(map));
         response.flushBuffer();

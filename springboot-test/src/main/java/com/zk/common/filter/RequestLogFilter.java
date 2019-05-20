@@ -28,7 +28,7 @@ public class RequestLogFilter extends AbstractRequestLoggingFilter {
     }
 
     @Override
-    protected boolean isIncludeHeaders() {
+    public boolean isIncludeHeaders() {
         return true;
     }
 
