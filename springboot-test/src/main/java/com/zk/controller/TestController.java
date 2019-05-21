@@ -22,6 +22,7 @@ public class TestController {
     @GetMapping ("/health")
     @ApiOperation("健康检查")
     public String ok () {
+        log.info("target method");
         return "ok, time = " + new Date().toLocaleString();
     }
 
