@@ -10,6 +10,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,10 @@ import lombok.ToString;
  * Created by zhuk on 2017/7/24.
  */
 public class ValidatorUtil {
+
+  // 用于存储参数错误信息
+  public static final ThreadLocal<Map<String, String>> ERR_MSG_CONTAINER =
+          ThreadLocal.withInitial(() -> new HashMap<String, String>());
 
   /**
    * 默认校验Default.class
@@ -45,21 +50,27 @@ public class ValidatorUtil {
   }
 
   private static <T> ValidatorResult getValidateResult(Set<ConstraintViolation<T>> validate) {
-    Objects.requireNonNull(validate, "入参validate不能为空");
-    ValidatorResult validatorResult = new ValidatorResult();
-    boolean isValid = true;
-    Map<String, String> errorMsg = new HashMap<String, String>();
-    Iterator<ConstraintViolation<T>> iterator = validate.iterator();
-    while (iterator.hasNext()) {
-      isValid = false;
-      ConstraintViolation<T> next = iterator.next();
-      String propertyPath = next.getPropertyPath().toString();
-      String message = next.getMessage();
-      errorMsg.put(propertyPath, message);
+    try {
+      Objects.requireNonNull(validate, "入参validate不能为空");
+      ValidatorResult validatorResult = new ValidatorResult();
+      boolean isValid = true;
+      Iterator<ConstraintViolation<T>> iterator = validate.iterator();
+      while (iterator.hasNext()) {
+        isValid = false;
+        ConstraintViolation<T> next = iterator.next();
+        String propertyPath = next.getPropertyPath().toString();
+        String message = next.getMessage();
+        if (!propertyPath.trim().isEmpty()) {
+          ERR_MSG_CONTAINER.get().put(propertyPath, message);
+        }
+      }
+      validatorResult.setErrorMsg(ERR_MSG_CONTAINER.get());
+      validatorResult.setValid(isValid);
+
+      return validatorResult;
+    } finally {
+      ERR_MSG_CONTAINER.remove();
     }
-    validatorResult.setErrorMsg(errorMsg);
-    validatorResult.setValid(isValid);
-    return validatorResult;
   }
 
   @Setter
