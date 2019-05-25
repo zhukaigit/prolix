@@ -95,6 +95,12 @@
             <version>27.0.1-jre</version>
         </dependency>
 
+        <!-- commons lang3 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -102,6 +108,16 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.zk.App</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
 
@@ -115,16 +131,6 @@
                 </configuration>
             </plugin>
 
-            <!-- 编译的时候使用JDK7和UTF8编码 ,-->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <!-- <version>3.0</version> -->
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>
