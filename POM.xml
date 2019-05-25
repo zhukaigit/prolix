@@ -67,6 +67,7 @@
     <module>logback-test</module>
     <module>springboot-test</module>
     <module>prolix-common</module>
+    <module>urule-test</module>
   </modules>
 
 </project>
