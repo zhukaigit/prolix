@@ -12,3 +12,4 @@ mvnw
 logs/
 *.hprof
 *.log
+*_ignore.*
