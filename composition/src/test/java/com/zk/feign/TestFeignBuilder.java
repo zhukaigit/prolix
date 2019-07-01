@@ -1,5 +1,7 @@
-package com.zk.feign.protogenesis;
+package com.zk.feign;
 
+import com.zk.feign.protogenesis.MyErrorDecoder;
+import com.zk.utils.JsonUtils;
 import feign.Feign;
 import feign.Logger;
 import feign.Request;
@@ -8,52 +10,43 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.slf4j.Slf4jLogger;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * 描述：
  * <p>
  * Created by zhukai on 2018/7/14.
  */
-public class FeignBuilder<T> {
-
-    public T getApi(Class<T> tClass, String baseUrl) {
-        return getApi(tClass, baseUrl, true);
-    }
-
-
-    public T getApi(Class<T> tClass, String baseUrl, boolean withDecoder) {
-        return getApi(tClass, baseUrl, withDecoder, 0);
-    }
+@Slf4j
+public class TestFeignBuilder<T> {
 
 
     /**
      * @param retryTime 重试的次数
      * @return
      */
-    public T getApi(Class<T> tClass, String baseUrl, boolean withDecoder, int retryTime) {
+    public T getApi(Class<T> tClass, String baseUrl, int retryTime, OkHttpClient client, Request.Options options) {
         Feign.Builder builder = new Feign.Builder()
                 .encoder(new JacksonEncoder())
+                .decoder(new JacksonDecoder())
                 .logger(new Slf4jLogger())
-                .logLevel(Logger.Level.BASIC)
-                .client(getOkHttpClient())
+                .logLevel(Logger.Level.FULL)
                 .errorDecoder(new MyErrorDecoder()) //feign client把非200的以及404(可以配置是否纳入异常)都算成error，都转给errorDecoder去处理了
 //                .requestInterceptor(new MyRequestInterceptor())
-                .retryer(new Retryer.Default(100, SECONDS.toMillis(1), 3))
-                ;
+                .client(client)
+                .options(options);
 
-        if (withDecoder) {
-            builder.decoder(new JacksonDecoder());
-        }
         if (retryTime > 0) {
-            builder.options(new Request.Options(1000, 2000))//超时时间设置
-                    .retryer(new Retryer.Default(100, 500, retryTime + 1));//period：表示每次重试的间隔时间。需要与options搭配使用
-
+            //period：表示每次重试的间隔时间。需要与options搭配使用
+            builder.retryer(new Retryer.Default(100, 500, retryTime + 1));
+        } else {
+            log.info("===== 无重试 ======");
+            builder.retryer(Retryer.NEVER_RETRY);
         }
+        log.info("feign builder = {}", JsonUtils.toJsonHasNullKey(builder));
         return builder.target(tClass, baseUrl);
     }
 
