@@ -1,6 +1,5 @@
 package com.zk.config;
 
-import com.zk.common.filter.RepeatableReadHttpServletRequestFilter;
 import com.zk.common.filter.RequestLogFilter;
 import com.zk.common.interceptor.AuthInterceptor;
 import org.springframework.beans.factory.BeanFactory;
@@ -53,15 +52,6 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         registration.setOrder(1); //Filter的执行顺序，值越小越先执行
         return registration;
     }
-    @Bean
-    public FilterRegistrationBean repeatableReadHttpServletRequestFilterRegistration(
-            RepeatableReadHttpServletRequestFilter repeatableReadHttpServletRequestFilter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(repeatableReadHttpServletRequestFilter);
-        registration.addUrlPatterns("/api/*");
-        registration.setOrder(2); //Filter的执行顺序，值越小越先执行
-        return registration;
-    }
     // ================== 过滤器配置 - 结束 ==================
 
     // swagger2
@@ -72,6 +62,8 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
                 .addResourceLocations("classpath:/META-INF/resources/swagger-ui.html");
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
+
+        // 其他静态资源配置
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
         super.addResourceHandlers(registry);
