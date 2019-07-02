@@ -4,12 +4,6 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>com.zk</groupId>
-    <artifactId>prolix</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-
   <groupId>com.zk</groupId>
   <artifactId>springmvc-swagger</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -23,7 +17,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.versionn>4.3.17.RELEASE</spring.versionn>
+    <!--<spring.versionn>4.3.17.RELEASE</spring.versionn>-->
+    <spring.versionn>3.1.2.RELEASE</spring.versionn>
   </properties>
 
   <dependencies>

@@ -9,20 +9,23 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 
-@RestController
+@Controller
 @Slf4j
 @Api(description = "用户模块API")
 public class UserController {
 
     @ApiDocTwo
     @ApiOperation("查询User信息")
-    @PostMapping("/query/user")
+    @ResponseBody
+    @RequestMapping (value = "/query/user", method = RequestMethod.POST)
     public ResponseVo<UserResDto> queryUser(
             @ApiParam @RequestBody RequestVo<UserReqDto> requestVo) {
         log.info("查询user信息，入参：{}", requestVo.getData());

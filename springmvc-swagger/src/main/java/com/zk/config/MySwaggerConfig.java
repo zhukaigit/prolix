@@ -1,8 +1,6 @@
 package com.zk.config;
 
 
-import com.zk.constant.annotation.ApiDocOne;
-import com.zk.constant.annotation.ApiDocTwo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -12,7 +10,6 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import static com.zk.custom.RequestHandlerSelectorsExt.withMethodAnnotations;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 
 @Configuration
@@ -31,15 +28,15 @@ public class MySwaggerConfig {
     /**
      * 获取指定注解的接口
      */
-    @Bean
-    public Docket JSY() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("JSY")//分组
-                .apiInfo(apiInfo())
-                .select()
-                .apis(withMethodAnnotations(ApiDocOne.class, ApiDocTwo.class))//只加载指定注解的API
-                .build();
-    }
+//    @Bean
+//    public Docket JSY() {
+//        return new Docket(DocumentationType.SWAGGER_2)
+//                .groupName("JSY")//分组
+//                .apiInfo(apiInfo())
+//                .select()
+//                .apis(withMethodAnnotations(ApiDocOne.class, ApiDocTwo.class))//只加载指定注解的API
+//                .build();
+//    }
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
