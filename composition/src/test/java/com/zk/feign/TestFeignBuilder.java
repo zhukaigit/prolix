@@ -29,7 +29,7 @@ public class TestFeignBuilder<T> {
      * @return
      */
     public T getApi(Class<T> tClass, String baseUrl, int retryTime, OkHttpClient client, Request.Options options) {
-        Feign.Builder builder = new Feign.Builder()
+        Feign.Builder builder = Feign.builder()
                 .encoder(new JacksonEncoder())
                 .decoder(new JacksonDecoder())
                 .logger(new Slf4jLogger())
@@ -41,12 +41,10 @@ public class TestFeignBuilder<T> {
 
         if (retryTime > 0) {
             //period：表示每次重试的间隔时间。需要与options搭配使用
-            builder.retryer(new Retryer.Default(100, 500, retryTime + 1));
+            builder.retryer(new Retryer.Default(500, 500, retryTime + 1));
         } else {
-            log.info("===== 无重试 ======");
             builder.retryer(Retryer.NEVER_RETRY);
         }
-        log.info("feign builder = {}", JsonUtils.toJsonHasNullKey(builder));
         return builder.target(tClass, baseUrl);
     }
 

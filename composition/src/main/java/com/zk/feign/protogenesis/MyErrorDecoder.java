@@ -21,8 +21,10 @@ public class MyErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
         String body = null;
         try {
-            body = StreamUtils.copyToString(
-                    response.body().asInputStream(), Charset.forName("utf8"));
+            if (response.body() != null && response.body().asInputStream() != null) {
+                body = StreamUtils.copyToString(
+                        response.body().asInputStream(), Charset.forName("utf8"));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

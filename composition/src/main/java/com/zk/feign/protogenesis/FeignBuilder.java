@@ -36,7 +36,7 @@ public class FeignBuilder<T> {
      * @return
      */
     public T getApi(Class<T> tClass, String baseUrl, boolean withDecoder, int retryTime) {
-        Feign.Builder builder = new Feign.Builder()
+        Feign.Builder builder = Feign.builder()
                 .encoder(new JacksonEncoder())
                 .logger(new Slf4jLogger())
                 .logLevel(Logger.Level.BASIC)
@@ -59,9 +59,6 @@ public class FeignBuilder<T> {
 
     private OkHttpClient getOkHttpClient() {
         okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
-                .connectTimeout(10000, TimeUnit.MILLISECONDS)
-                .readTimeout(120000, TimeUnit.MILLISECONDS)
-                .writeTimeout(120000, TimeUnit.MICROSECONDS)
                 .connectionPool(new ConnectionPool(10, 10, TimeUnit.MINUTES))
                 .build();
         return new OkHttpClient(client);
