@@ -13,3 +13,4 @@ logs/
 *.hprof
 *.log
 *_ignore.*
+temp/
