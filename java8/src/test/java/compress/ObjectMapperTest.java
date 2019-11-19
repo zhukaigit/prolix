@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -313,4 +316,58 @@ public class ObjectMapperTest {
         private int sex;
     }
     // ================ 复杂对象的反序列化 - end ================
+
+
+    // ================ 方法泛型返回 - start ================
+
+    @Test
+    public void test6() throws Exception {
+        String jsonStr = "{\"sex\":1,\"b\":{\"d\":{\"age\":11},\"blist\":[1,2,3,4]},\"cs\":[{\"name\":\"zk\"}]}";
+        A<B, C> a = t1(jsonStr);
+        System.out.println(a);
+    }
+
+    public A<B, C>  t1(String json) throws Exception {
+        Type type = ObjectMapperTest.class.getMethod("t1", String.class).getGenericReturnType();
+        return mapper.readValue(json, mapper.constructType(type));
+    }
+
+    // ================ 方法泛型返回 - end ================
+
+    @Test
+    public void test7_1() throws IOException {
+        String jsonStr = "[1,2,3]";
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(List.class, Integer.class);
+        List<Integer> list = mapper.readValue(jsonStr, javaType);
+        System.out.println(list);
+    }
+    @Test
+    public void test7_2() throws IOException {
+        String jsonStr = "{\"d\":[1,2,3]}";
+
+        // 方式一
+        JavaType javaType1 = mapper.getTypeFactory().constructParametricType(List.class, Integer.class);
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(B.class, javaType1);
+        B b = mapper.readValue(jsonStr, javaType);
+        System.out.println(b);
+
+        // 方式二
+        B b2 = mapper.readValue(jsonStr, new TypeReference<B<List<Integer>>>(){});
+        System.out.println(b2);
+    }
+    @Test
+    public void test7_3() throws IOException {
+        String jsonStr = "{\"d\":[1,2,3]}";
+
+        // 方式一
+        JavaType javaType1 = mapper.getTypeFactory().constructParametricType(List.class, Integer.class);
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(
+                Map.class, SimpleType.construct(String.class), javaType1);
+        Map<String, List<Integer>> map = mapper.readValue(jsonStr, javaType);
+        System.out.println(map);
+
+        // 方式二
+        Map<String, List<Integer>> map2 = mapper.readValue(jsonStr, new TypeReference<Map<String, List<Integer>>>(){});
+        System.out.println(map2);
+    }
 }
