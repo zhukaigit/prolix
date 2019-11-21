@@ -1,5 +1,6 @@
 package compress;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -256,6 +257,11 @@ public class ObjectMapperTest {
         Assert.assertEquals("zk", obj.getCs().get(0).getName());
         Assert.assertEquals(4, obj.getB().getBList().length);
         Assert.assertEquals(1, obj.getSex());
+
+        // 使用fastjson
+        A<B<D>, C> obj2 = JSONObject.parseObject(jsonStr, new com.alibaba.fastjson.TypeReference<A<B<D>, C>>() {
+        });
+        System.out.println(obj2);
     }
 
     @Test
@@ -369,5 +375,20 @@ public class ObjectMapperTest {
         // 方式二
         Map<String, List<Integer>> map2 = mapper.readValue(jsonStr, new TypeReference<Map<String, List<Integer>>>(){});
         System.out.println(map2);
+
+        // 方式三
+        Map<String, List<Integer>> map3 = JSONObject.parseObject(jsonStr, new com.alibaba.fastjson.TypeReference<Map<String, List<Integer>>>() {
+        });
+        System.out.println(map3);
+    }
+
+    @Test
+    public void test8() {
+        A a = new A();
+        System.out.println(a.getClass());
+
+        TypeReference<A> typeReference = new TypeReference<A>() {
+        };
+        System.out.println(typeReference.getClass());
     }
 }
