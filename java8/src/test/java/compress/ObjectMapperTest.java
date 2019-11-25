@@ -95,6 +95,7 @@ public class ObjectMapperTest {
         a.setD(11);
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);//美化的json串
         System.out.println(mapper.writeValueAsString(a));
 
     }
