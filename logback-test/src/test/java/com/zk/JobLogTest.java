@@ -1,6 +1,6 @@
 package com.zk;
 
-import com.zk.logback.IsJobLogFilter;
+import com.zk.logback.CheckMdcKeyIsExistFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.slf4j.MDC;
@@ -8,35 +8,32 @@ import org.slf4j.MDC;
 /**
  * 有时我们希望job中的日志单独放在一个日志文件中
  *
- * 方式一，如下：
- * 步骤：1、在job的最开始，使用MDC存入一个变量，如：MDC.put("IS_JOB", "THIS_IS_JOB");
- * 2、在日志配置文件中，添加EvaluatorFilter，参考logback.xml文件中的JOB_LOG输出源配置，
- *  注意filter下的expression配置，使用EvaluatorFilter过滤器，需要额外的两个JAR包，commons-compiler.jar和janino.jar
- * 3、对于其他的输出源，排除该过滤条件即可
+ * 实现方式：
+ * 1、单独配置job日志数据源，对该日志输出源添加“自定义job滤器”，如{@link CheckMdcKeyIsExistFilter}，如果满足条件，则ACCEPT，否则DENY
+ * 2、其他日志输出源如果不想输出job线程打印出来的日志，则也许添加“自定义job滤器”,如果满足条件，则DENY，否则NEUTRAL
  *
- * 方式二：
- * 1、实现自定义过滤器，如{@link IsJobLogFilter}
- * 2、在对应的appender中添加该过滤器
- *
+ * 参考配置文件：logback.xml
  */
 @Slf4j
 public class JobLogTest {
 
     @Test
-    public void testJobLog() {
+    public void testJobLog() throws InterruptedException {
         mockJobMethod();
+        Thread.sleep(300L);
     }
 
     @Test
-    public void testControllerLog() {
+    public void testControllerLog() throws InterruptedException {
         mockController();
+        Thread.sleep(300L);
     }
 
     /**
      * 这里模拟一个job方法的入口，希望日记记录在job.log日志文件中
      */
     public void mockJobMethod () {
-        MDC.put("IS_JOB", "THIS_IS_JOB_LOG");
+        MDC.put("isJob", "");
         log.info("这里模拟一个job方法的入口");
         mockServiceMethod();
     }
@@ -54,5 +51,14 @@ public class JobLogTest {
      */
     public void mockServiceMethod () {
         log.info("普通方法被调用了");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run () {
+                // 注意：此时的子线程没法区分
+                log.info("子线程在做事情");
+            }
+        }).start();
     }
+
 }

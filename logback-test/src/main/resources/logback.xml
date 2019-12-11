@@ -28,7 +28,8 @@
         </encoder>
     </appender>
 
-    <appender name="COMMON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 测试SizeAndTimeBasedRollingPolicy -->
+    <appender name="sizeAndTimeTestAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 设置文件名，即当前写入的文件名称 -->
         <file>${LOG_HOME}/sizeAndTime.log</file>
 
@@ -50,27 +51,26 @@
     </appender>
 
     <!-- 输出源：排除job日志，只记录log级别的日志  -->
-    <appender name="FILE2" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="bizAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 设置文件名，即当前写入的文件名称 -->
-        <file>${LOG_HOME}/job.log</file>
+        <file>${LOG_HOME}/biz.log</file>
 
         <!-- 排除job日志 -->
-        <filter class="com.zk.logback.IsJobLogFilter">
-            <!-- 匹配则排除 -->
+        <filter class="com.zk.logback.CheckMdcKeyIsExistFilter">
+            <mdcKey>isJob</mdcKey>
             <OnMatch>DENY</OnMatch>
             <!-- 不匹配，交给下一个过滤器处理 -->
-            <OnMismatch>NATURE</OnMismatch>
+            <OnMismatch>NEUTRAL</OnMismatch>
         </filter>
         <!-- 日志级别过滤器 -->
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>INFO</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
+        <filter class="com.zk.logback.LevelRangeFilter">
+            <levelMin>INFO</levelMin>
+            <levelMax>ERROR</levelMax>
         </filter>
 
         <!-- TimeBasedRollingPolicy和SizeBasedTriggeringPolicy冲突，所以想要用size和time控制，用下面这个策略 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/job.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/biz.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <!-- 定义每一个日志文件大小上限 -->
             <maxFileSize>1MB</maxFileSize>
             <!-- 每一个日志文件保留的天数 -->
@@ -81,29 +81,21 @@
             <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}[%X{IS_JOB}] [%thread] [traceId] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [traceId] %-5level %logger{50} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <!-- job 日志输出源 -->
-    <appender name="JOB_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="jobAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 设置文件名，即当前写入的文件名称 -->
         <file>${LOG_HOME}/job.log</file>
 
         <!-- job 日志过滤器 -->
-        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-            <evaluator>
-                <!-- 条件为： mdc中设置IS_JOB为"THIS_IS_JOB", 即MDC.put("IS_JOB","THIS_IS_JOB")-->
-                <expression>return mdc.get("IS_JOB") == "THIS_IS_JOB";</expression>
-            </evaluator>
+        <filter class="com.zk.logback.CheckMdcKeyIsExistFilter">
+            <mdcKey>isJob</mdcKey>
             <OnMatch>ACCEPT</OnMatch>
             <OnMismatch>DENY</OnMismatch>
         </filter>
-        <!-- 或者使用自定义过滤器 -->
-        <!--<filter class="com.zk.logback.IsJobLogFilter">-->
-        <!--<OnMatch>ACCEPT</OnMatch>-->
-        <!--<OnMismatch>DENY</OnMismatch>-->
-        <!--</filter>-->
 
         <!-- TimeBasedRollingPolicy和SizeBasedTriggeringPolicy冲突，所以想要用size和time控制，用下面这个策略 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -118,20 +110,15 @@
             <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}[%X{IS_JOB}] [%thread] [traceId] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [traceId] %-5level %logger{50} - %msg%n</pattern>
         </encoder>
     </appender>
 
-
-    <logger name="com.test.demo" level="DEBUG">
-        <appender-ref ref="FILE"/>
-    </logger>
-
     <!-- 日志输出级别 -->
-    <root level="INFO">
-        <!--<appender-ref ref="COMMON_FILE"/>-->
+    <root level="TRACE">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="STDERR"/>
-        <!--<appender-ref ref="JOB_LOG"/>-->
+        <appender-ref ref="jobAppender"/>
+        <appender-ref ref="bizAppender"/>
     </root>
 </configuration>

@@ -2,22 +2,42 @@ package com.zk.logback;
 
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.filter.Filter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.filter.AbstractMatcherFilter;
 import ch.qos.logback.core.spi.FilterReply;
-
-import java.util.Map;
 
 /**
  * 自定义过滤器
- * @param <E>
  */
-public class LevelRangeFilter<E> extends Filter<E> {
-    private boolean acceptOnMatch = false;
+public class LevelRangeFilter extends AbstractMatcherFilter<ILoggingEvent> {
     private Level levelMin;
     private Level levelMax;
 
-    public LevelRangeFilter() {
+    @Override
+    public FilterReply decide(ILoggingEvent event) {
+        if (!isStarted()) {
+            return FilterReply.NEUTRAL;
+        }
+
+        // 赋默认值
+        if (levelMin == null) {
+            levelMin = Level.INFO;
+        }
+        if (levelMax == null) {
+            levelMax = Level.ERROR;
+        }
+
+        // 判断是否满足：event.getLevel().isGreaterOrEqual(this.levelMin)
+        if (!event.getLevel().isGreaterOrEqual(this.levelMin)) {
+            return FilterReply.DENY;
+        }
+
+        // 判断是否满足：this.levelMax.isGreaterOrEqual(event.getLevel())
+        if (!this.levelMax.isGreaterOrEqual(event.getLevel())) {
+            return FilterReply.DENY;
+        }
+
+        return FilterReply.NEUTRAL;
     }
 
     public void setLevelMax(Level levelMax) {
@@ -28,36 +48,9 @@ public class LevelRangeFilter<E> extends Filter<E> {
         this.levelMin = levelMin;
     }
 
-    public void setAcceptOnMatch(boolean acceptOnMatch) {
-        this.acceptOnMatch = acceptOnMatch;
-    }
-
-    public FilterReply decide(E eventObject) {
-
-        if (!this.isStarted()) {
-            return FilterReply.NEUTRAL;
-        } else {
-            LoggingEvent event = (LoggingEvent)eventObject;
-
-
-            Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
-
-
-            if (this.levelMin != null && !event.getLevel().isGreaterOrEqual(this.levelMin)) {
-                return FilterReply.DENY;
-            } else if (this.levelMax != null && event.getLevel().toInt() > this.levelMax.toInt()) {
-                return FilterReply.DENY;
-            } else {
-                return this.acceptOnMatch ? FilterReply.ACCEPT : FilterReply.NEUTRAL;
-            }
-
-        }
-    }
-
     public void start() {
         if (this.levelMin != null || this.levelMax != null) {
             super.start();
         }
-
     }
 }
