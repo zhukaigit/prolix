@@ -1,6 +1,6 @@
 package com.zk.config;
 
-import com.zk.common.filter.RequestLogFilter;
+import com.zk.common.filter.LogRequestFilter;
 import com.zk.common.interceptor.AuthInterceptor;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,7 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
 
     // ================== 过滤器配置 - 开始 ==================
     @Bean
-    public FilterRegistrationBean requestLogFilterRegistration(RequestLogFilter requestLogFilter) {
+    public FilterRegistrationBean requestLogFilterRegistration(LogRequestFilter requestLogFilter) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(requestLogFilter);  //RequestLogFilter类上使用了@Component注解，将自己交给Spring容器管理，可注入其他Spring bean
         registration.addUrlPatterns("/api/*");
