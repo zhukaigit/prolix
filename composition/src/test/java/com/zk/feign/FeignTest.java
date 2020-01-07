@@ -5,16 +5,13 @@ import feign.Headers;
 import feign.Param;
 import feign.Request;
 import feign.RequestLine;
-import feign.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.SocketTimeoutException;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -22,13 +19,15 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class FeignTest {
-    public interface TestControllerApi {
+
+    public interface RemoteClient {
         String BASE_URL = "http://localhost:8081/api";
 
-        @RequestLine("POST /queryUserDtoByName?name={name}")
-        @Headers("Content-Type: application/x-www-form-urlencoded")
+        @RequestLine ("POST /queryUserDtoByName?name={name}")
+        @Headers ("Content-Type: application/x-www-form-urlencoded")
         UserDto queryUserDtoByName(@Param("name") String name);
 
+        // prolix下springboot-test应用下的url
         @RequestLine("GET /feign/sleep?sleepMills={sleepMills}")
         @Headers("Content-Type: application/x-www-form-urlencoded")
         String testTimeout(@Param("sleepMills") long sleepMills);
@@ -48,62 +47,65 @@ public class FeignTest {
     }
 
     /**
-     * 保证目标方法sleep超过readTimeoutMills
+     * okhttpClient设置了readTimeout=10s，feign的Request.option设置了readTimeout=3s
+     * 测试用例：feign Request.option时间 < 服务器sleep=6s < okhttpReadTimeout
+     * 测试结果：超时异常
+     *
+     * 源码位置：feign.okhttp.OkHttpClient#execute(feign.Request, feign.Request.Options)，最终超时时间以feign设置为准
      */
     @Test
-    public void testTimeOut() {
+    public void testTimeOut1() {
         try {
-            TestControllerApi controllerApi = new TestFeignBuilder<TestControllerApi>()
-                    .getApi(TestControllerApi.class, TestControllerApi.BASE_URL, 0,
-                            new OkHttpClient(),
-                            new Request.Options(500, 5000)
+            RemoteClient remoteClient = new FeignClientBuilder<RemoteClient>()
+                    .buildRemoteClient(RemoteClient.class, RemoteClient.BASE_URL, 0,
+                            FeignClientBuilder.getOkHttpClient(),
+                            new Request.Options(500, 3000)
                     );
             start = System.currentTimeMillis();
-            controllerApi.testTimeout(20000);
+            remoteClient.testTimeout(6000);
         } catch (Exception e) {
             log.error("调用异常", e);
             Assert.assertTrue(e.getCause() instanceof SocketTimeoutException);
         }
     }
 
+    /**
+     * okhttpClient设置了readTimeout=10s，feign的Request.option设置了readTimeout=14s
+     * 测试用例：okhttpReadTimeout < 服务器sleep=12s < feign Request.option时间
+     * 测试结果：未报超时异常
+     *
+     * 源码位置：feign.okhttp.OkHttpClient#execute(feign.Request, feign.Request.Options)，最终超时时间以feign设置为准
+     */
     @Test
-    public void testOkhttpclientTimeOut() {
-        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
-                .connectTimeout(100, TimeUnit.MILLISECONDS)
-                .readTimeout(3000, TimeUnit.MILLISECONDS)
-                .writeTimeout(1000, TimeUnit.MICROSECONDS)
-                .connectionPool(new ConnectionPool(10, 10, TimeUnit.MINUTES))
-                .build();
+    public void testTimeOut2() {
         try {
-            TestControllerApi controllerApi = new TestFeignBuilder<TestControllerApi>()
-                    .getApi(TestControllerApi.class, TestControllerApi.BASE_URL, 0,
-                            new OkHttpClient(client),
-                            new Request.Options(500, 8000)
+            RemoteClient remoteClient = new FeignClientBuilder<RemoteClient>()
+                    .buildRemoteClient(RemoteClient.class, RemoteClient.BASE_URL, 3,
+                            FeignClientBuilder.getOkHttpClient(),
+                            new Request.Options(1, 1)
                     );
             start = System.currentTimeMillis();
-            controllerApi.testTimeout(20000);
+            remoteClient.testTimeout(12000);
         } catch (Exception e) {
             log.error("调用异常", e);
             Assert.assertTrue(e.getCause() instanceof SocketTimeoutException);
         }
-
     }
 
     @Test
     public void testFeignRetry() {
         try {
-            TestControllerApi controllerApi = new TestFeignBuilder<TestControllerApi>()
-                    .getApi(TestControllerApi.class, TestControllerApi.BASE_URL, 1,
-                            new OkHttpClient(),
+            RemoteClient remoteClient = new FeignClientBuilder<RemoteClient>()
+                    .buildRemoteClient(RemoteClient.class, RemoteClient.BASE_URL, 5,
+                            FeignClientBuilder.getOkHttpClient(),
                             new Request.Options(500, 3000)
                     );
             start = System.currentTimeMillis();
-            controllerApi.testTimeout(20000);
+            remoteClient.testTimeout(20000);
         } catch (Exception e) {
             log.error("调用异常", e);
             Assert.assertTrue(e.getCause() instanceof SocketTimeoutException);
         }
-
     }
 
 }
