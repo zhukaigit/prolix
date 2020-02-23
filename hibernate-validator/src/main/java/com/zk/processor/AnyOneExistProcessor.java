@@ -2,10 +2,6 @@ package com.zk.processor;
 
 import com.zk.annotation.AnyoneExist;
 import com.zk.annotation.FieldGroup;
-import com.zk.annotation.RelatedValidate;
-import com.zk.annotation.sub.ProcessorHandler;
-import com.zk.exception.ValidateException;
-import com.zk.processor.sub.IProcessor;
 import com.zk.utils.ValidatorUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,8 +12,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static com.zk.utils.ValidatorUtil.ERR_MSG_CONTAINER;
 
 /**
  * 字段依赖校验
@@ -42,17 +36,12 @@ public class AnyOneExistProcessor implements ConstraintValidator<AnyoneExist, Ob
                 if (annotation instanceof FieldGroup) {
                     FieldGroup fieldGroup = (FieldGroup) annotation;
                     String groupKey = fieldGroup.value();
+                    groupField.putIfAbsent(groupKey, new ArrayList<>());
+                    // 默认为false
+                    groupResult.putIfAbsent(groupKey, false);
 
                     // 将field加入到对应group的集合中
-                    List<String> fieldList = groupField.get(groupKey);
-                    if (fieldList == null) {
-                        fieldList = new ArrayList<>();
-                    }
-                    fieldList.add(f.getName());
-                    groupField.put(groupKey, fieldList);
-
-                    // 默认为false
-                    groupResult.put(groupKey, false);
+                    groupField.get(groupKey).add(f.getName());
 
                     try {
                         Object o = f.get(object);
@@ -83,7 +72,7 @@ public class AnyOneExistProcessor implements ConstraintValidator<AnyoneExist, Ob
         }
 
         if (!result) {
-            ERR_MSG_CONTAINER.get().append(errorMsg.toString());
+            ValidatorUtil.ERR_MSG_CONTAINER.get().append(errorMsg.toString());
         }
 
         return result;
