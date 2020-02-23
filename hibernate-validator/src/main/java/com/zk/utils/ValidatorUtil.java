@@ -28,8 +28,8 @@ import lombok.ToString;
 public class ValidatorUtil {
 
   // 用于存储参数错误信息
-  public static final ThreadLocal<Map<String, String>> ERR_MSG_CONTAINER =
-          ThreadLocal.withInitial(() -> new HashMap<String, String>());
+  public static final ThreadLocal<StringBuffer> ERR_MSG_CONTAINER =
+          ThreadLocal.withInitial(StringBuffer::new);
 
   /**
    * 默认校验Default.class
@@ -61,10 +61,10 @@ public class ValidatorUtil {
         String propertyPath = next.getPropertyPath().toString();
         String message = next.getMessage();
         if (!propertyPath.trim().isEmpty()) {
-          ERR_MSG_CONTAINER.get().put(propertyPath, message);
+          ERR_MSG_CONTAINER.get().append(propertyPath).append(":").append(message).append("; ");
         }
       }
-      validatorResult.setErrorMsg(ERR_MSG_CONTAINER.get());
+      validatorResult.setErrorMsg(ERR_MSG_CONTAINER.get().toString());
       validatorResult.setValid(isValid);
 
       return validatorResult;
@@ -80,7 +80,7 @@ public class ValidatorUtil {
   @ToString
   public static class ValidatorResult {
     boolean isValid;
-    Map<String, String> errorMsg;
+    String errorMsg;
   }
 
 }

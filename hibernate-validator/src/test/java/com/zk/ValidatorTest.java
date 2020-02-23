@@ -1,11 +1,8 @@
 package com.zk;
 
-import com.zk.model.GroupModel;
+import com.zk.model.*;
 import com.zk.model.GroupModel.GroupA;
-import com.zk.model.GroupOrderModel;
 import com.zk.model.GroupOrderModel.GroupOrderOne;
-import com.zk.model.SubUser;
-import com.zk.model.User;
 import com.zk.utils.ValidatorUtil;
 import com.zk.utils.ValidatorUtil.ValidatorResult;
 import org.junit.After;
@@ -67,6 +64,13 @@ public class ValidatorTest {
     model.setNameAB(-1);
     model.setNameAC(-1);
     //会按照GroupOrderOne上的GroupSequence注解指定顺序校验
+    validatorResult = ValidatorUtil.validate(model, GroupOrderOne.class);
+
+  }
+
+  @Test
+  public void testAnyoneExist() {
+    AnyOneExistModel model = new AnyOneExistModel();
     validatorResult = ValidatorUtil.validate(model, GroupOrderOne.class);
 
   }

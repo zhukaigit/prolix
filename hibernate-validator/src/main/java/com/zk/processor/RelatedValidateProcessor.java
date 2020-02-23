@@ -49,7 +49,7 @@ public class RelatedValidateProcessor implements ConstraintValidator<RelatedVali
                     subProcessor.valid(annotation, object);
                 } catch (ValidateException e) {
                     log.error("属性{}不符合规范", f.getName());
-                    ValidatorUtil.ERR_MSG_CONTAINER.get().put(f.getName(), "不符合规范");
+                    ValidatorUtil.ERR_MSG_CONTAINER.get().append(f.getName()).append("=").append("不符合规范");
                     return false;
                 } catch (Exception e) {
                     log.error("内部异常", e);
@@ -62,6 +62,5 @@ public class RelatedValidateProcessor implements ConstraintValidator<RelatedVali
 
     @Override
     public void initialize (RelatedValidate constraintAnnotation) {
-
     }
 }
