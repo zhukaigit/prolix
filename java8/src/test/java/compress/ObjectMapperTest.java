@@ -21,9 +21,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ObjectMapperTest {
 
@@ -288,7 +286,6 @@ public class ObjectMapperTest {
         return mapper.readValue(jsonStr, typeReference);
     }
 
-
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -391,5 +388,44 @@ public class ObjectMapperTest {
         TypeReference<A> typeReference = new TypeReference<A>() {
         };
         System.out.println(typeReference.getClass());
+    }
+
+
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private static class B2 {
+        private D d;
+        private int[] bList;
+    }
+
+    @Test
+    public void testToMap() {
+
+        String jsonStr = "{\"name\":[1,2,3,4]}";
+        Map<String, List> map1 = toMap(jsonStr, String.class, List.class);
+
+        String jsonStr2 = "{\"name\":{\"d\":{\"age\":12}}}";
+        Map<String, B2> map2 = toMap(jsonStr2, String.class, B2.class);
+
+        System.out.println(map1);
+
+    }
+
+    public static JavaType getCollectionType(Class<?> paramClass, Class<?>... elementClasses) {
+        return mapper.getTypeFactory().constructParametricType(paramClass, elementClasses);
+    }
+
+    /**
+     * 注意：key与value不再支持范型
+     */
+    public static <Key,Value> Map<Key,Value> toMap(String jsonStr, Class<Key> keyClass, Class<Value> valueClass) {
+        try {
+            return mapper.readValue(jsonStr, getCollectionType(HashMap.class, keyClass, valueClass));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Collections.EMPTY_MAP;
     }
 }
