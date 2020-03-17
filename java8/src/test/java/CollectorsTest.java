@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -52,6 +53,13 @@ public class CollectorsTest {
                 )
         );
         System.out.println(collect2);
+    }
+
+    @Test
+    public void testGroupingAndReducing() {
+        Map<Integer, Integer> collect = Stream.of(1, 2, 1, 2, 1, 2)
+                .collect(Collectors.groupingBy(e -> Integer.valueOf(e) % 2, Collectors.reducing(0, (a, b) -> a + b)));
+        System.out.println(collect);
     }
 
     // 对各个元素单独处理之后，再进行流式处理
@@ -188,4 +196,63 @@ public class CollectorsTest {
         System.out.println("结果：" + collect);
     }
 
+    /**
+     * 本单元测试主要考察Function的特殊用法
+     * @throws Exception
+     */
+    @Test
+    public void testFunction() throws Exception {
+        // 这是常用的写法，类型转换
+        List<String> collect1 = Stream.of(1, 2, 3, 1)
+                .map(integer -> {
+                    System.out.println("map中的转换");
+                    return changeIntToString(integer);
+                })// 这个时候，changeIntToString()已经调用
+                .collect(Collectors.toList());
+
+        // 特殊的转换：复杂点写法
+        List<Callable<String>> collect2 = Stream.of(1, 2, 3, 1)
+                .map(integer -> {
+                    System.out.println("map中的转换");
+                    return new Callable<String>(){
+                        @Override
+                        public String call() throws Exception {
+                            return changeIntToString(integer); // 这个时候，changeIntToString()方法中的逻辑尚未调用
+                        }
+                    };
+                })
+                .collect(Collectors.toList());
+
+        // 特殊的转换：简化版1
+        List<Callable<String>> collect2_1 = Stream.of(1, 2, 3, 1)
+                .map(integer -> {
+                    System.out.println("map中的转换");
+                    return (Callable<String>) () -> changeIntToString(integer);// 这个时候，changeIntToString()方法中的逻辑尚未调用
+                })
+                .collect(Collectors.toList());
+
+        // 特殊的转换：简化版2
+        List<Callable<String>> collect2_2 = Stream.of(1, 2, 3, 1)
+                .map(integer -> (Callable<String>) () -> changeIntToString(integer))// 这个时候，changeIntToString()方法中的逻辑尚未调用
+                .collect(Collectors.toList());
+
+        // 举一反三：简单写法
+        List<A<String>> collect4 = Stream.of(1, 2, 3, 1)
+                .map(integer -> (A<String>) (msg) -> msg + "-" + integer)// 这个时候，changeIntToString()方法中的逻辑尚未调用
+                .collect(Collectors.toList());
+
+        for (A<String> c : collect4) {
+            c.say("");
+        }
+
+    }
+
+    public String changeIntToString(int i) {
+        System.out.println("执行转换：" + i);
+        return i + "xxxx";
+    }
+
+    private interface A<T> {
+        T say(String msg);
+    }
 }

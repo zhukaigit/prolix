@@ -4,12 +4,12 @@ package compress;
  * Created by csci on 17-6-6.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import com.google.common.collect.Lists;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +85,7 @@ public class ZipUtils {
    * 描述：压缩指定输入流到ZipOutputStream中
    * @param elementFileName 子文件名
    * @param in 子文件输入流
+   * @param out 压缩文件输出流
    */
   public static void doCompress(String elementFileName, InputStream in, ZipOutputStream out) {
     byte[] buffer = new byte[2048];
@@ -102,4 +103,70 @@ public class ZipUtils {
       throw new RuntimeException("压缩文件异常", e);
     }
   }
+
+  /**
+   * 描述：压缩指定输入流到ZipOutputStream中
+   * @param elementFileName 子文件名
+   * @param in 子文件输入流
+   * @param compressFileAbsolutePath 压缩文件绝对路径
+   */
+  public static void doCompress(String elementFileName, InputStream in, String compressFileAbsolutePath) {
+    File file = FileUtil.createNewFileIfNotExisted(compressFileAbsolutePath);
+    ZipOutputStream out;
+    try {
+      out = new ZipOutputStream(new FileOutputStream(file));
+    } catch (Exception e) {
+      throw new RuntimeException("构建压缩文件流异常", e);
+    }
+    doCompress(elementFileName, in, out);
+    try {
+      out.close();
+    } catch (IOException e) {
+      throw new RuntimeException("ZipOutputStream关闭异常", e);
+    }
+  }
+
+
+  /**
+   * 描述：压缩指定输入流到指定路径的文件中
+   * @param compressInfoList 待压缩信息
+   * @param compressFileAbsolutePath 压缩文件绝对路径名
+   */
+  public static void doCompress(List<CompressInfo> compressInfoList, String compressFileAbsolutePath) {
+    AssertUtil.notEmpty(compressInfoList, "待压缩内容不能为空");
+    File file = FileUtil.createNewFileIfNotExisted(compressFileAbsolutePath);
+    ZipOutputStream out;
+    try {
+      out = new ZipOutputStream(new FileOutputStream(file));
+    } catch (Exception e) {
+      throw new RuntimeException("构建压缩文件流异常", e);
+    }
+    for (CompressInfo compressInfo : compressInfoList) {
+      doCompress(compressInfo.getSubFileName(), compressInfo.getContent(), out);
+    }
+    try {
+      out.close();
+    } catch (IOException e) {
+      throw new RuntimeException("ZipOutputStream关闭异常", e);
+    }
+  }
+
+  @Data
+  @AllArgsConstructor
+  public static class CompressInfo {
+    // 压缩文件中 - 子文件名
+    private String subFileName;
+    // 待压缩内容
+    private InputStream content;
+  }
+
+  public static void main(String[] args) {
+    ArrayList<CompressInfo> compressInfos = Lists.newArrayList(
+            new CompressInfo("test1.txt", new ByteArrayInputStream("1".getBytes())),
+            new CompressInfo("test2.txt", new ByteArrayInputStream("2".getBytes())),
+            new CompressInfo("test3.txt", new ByteArrayInputStream("3".getBytes()))
+    );
+    doCompress(compressInfos, "/Users/zhukai/temp/remote/zip/go/zk.zip");
+  }
+
 }
