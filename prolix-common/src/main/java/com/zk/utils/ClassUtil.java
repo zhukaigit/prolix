@@ -1,7 +1,8 @@
 package com.zk.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
-import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+@Slf4j
 public class ClassUtil {
     private static final String CLASS_SUFFIX      = ".class";
     private static final String CLASS_FILE_PREFIX = File.separator + "classes" + File.separator;
@@ -35,14 +37,13 @@ public class ClassUtil {
                     String protocol = url.getProtocol();
                     if ("file".equals(protocol)) {
                         String path = url.getPath();
-                        System.out.println(path);
                         result.addAll(getAllClassNameByFile(new File(path), includeSubDir));
                     } else if ("jar".equals(protocol) && includeJarClass) {
                         JarFile jarFile = null;
                         try {
                             jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.warn("执行((JarURLConnection) url.openConnection()).getJarFile()异常", e);
                         }
                         if (jarFile != null) {
                             result.addAll(getAllClassNameByJar(jarFile, packageName, includeSubDir));
@@ -50,8 +51,8 @@ public class ClassUtil {
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.warn("getClazzName异常", e);
         }
         return result;
     }
@@ -144,7 +145,7 @@ public class ClassUtil {
 
     // 测试
     public static void main(String[] args) {
-        List<String> list = getClazzName("com.zk", true, false);
+        List<String> list = getClazzName("com", true, false);
         for (String string : list) {
             System.out.println(string);
         }
