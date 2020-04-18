@@ -1,6 +1,5 @@
-package compress;
+package com.zk.utils;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
@@ -18,7 +17,7 @@ public class AssertUtil {
         }
     }
     public static void notEmpty (Collection coll, String errMsg) throws RuntimeException {
-        if (CollectionUtils.isEmpty(coll)) {
+        if (coll==null || coll.isEmpty()) {
             throw new RuntimeException(errMsg);
         }
     }

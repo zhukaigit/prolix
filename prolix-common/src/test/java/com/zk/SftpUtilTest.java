@@ -1,14 +1,16 @@
 package com.zk;
 
 import com.jcraft.jsch.*;
+import com.zk.utils.AssertUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -84,10 +86,26 @@ public class SftpUtilTest {
 
     @Test
     public void testPut4() throws Exception {
-        String localPath = "/Users/zhukai/temp/temp2.txt";
-        String remotePath = "/Users/zhukai/temp/temp.txt";
+        String localPath = "/Users/zhukai/temp/errInfo.txt";
+        String remotePath = "/Users/zhukai/temp/xxx/temp2.txt";
+        mkDirIfNotExisted("/Users/zhukai/temp/xxx/");
         sftp.put(localPath, remotePath);
     }
+
+    private void mkDirIfNotExisted(String remoteDir) {
+        try {
+            AssertUtil.assertTrue(remoteDir.endsWith(File.separator), "remoteDir不是以\"/\"结尾");
+            sftp.cd(remoteDir);
+        } catch (SftpException e) {
+            try {
+                sftp.mkdir(remoteDir);
+                System.out.println("创建成功");
+            } catch (SftpException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
 
     @Test
     public void testGet() throws Exception {
@@ -103,6 +121,57 @@ public class SftpUtilTest {
         String remotePath = tempBasePathRemote + "remote.txt";
         String localPath = tempBasePathLocal + "1.txt";
         sftp.get(remotePath, localPath);
+    }
+
+    @Test
+    public void testRename() throws SftpException {
+        String remotePath = "/Users/zhukai/temp/temp.txt";
+        String newRemotePath = "/Users/zhukai/temp/newName.txt";
+        sftp.rename(remotePath, newRemotePath);
+    }
+
+    /**
+     * 测试rename
+     * 测试结果：若newPath已存在，会被oldPath覆盖
+     */
+    @Test
+    public void testRename2() throws SftpException {
+        sftp.rename("/Users/zhukai/temp/policyNo.txt", "/Users/zhukai/temp/errInfo.txt");
+    }
+
+    @Test
+    public void testPutMode() throws SftpException {
+        sftp.put(new ByteArrayInputStream(String.format(", %s", new Date().toLocaleString()).getBytes()),
+                "/Users/zhukai/temp/errInfo.txt",
+                ChannelSftp.OVERWRITE);
+    }
+
+    @Test
+    public void testMkdir() {
+        try {
+
+            sftp.mkdir("/Users/zhukai/temp/remote/xxx");
+        } catch (SftpException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void testFileIsExisted() {
+        Assert.assertTrue(fileIsExisted("/Users/zhukai/temp/errInfo.txt"));
+        Assert.assertTrue(!fileIsExisted("/Users/zhukai/temp/"));
+        Assert.assertTrue(!fileIsExisted("/Users/zhukai/temp/no"));
+    }
+
+    public boolean fileIsExisted(String filePath) {
+        SftpATTRS stat = null;
+        try {
+            stat = sftp.lstat(filePath);
+        } catch (SftpException e) {
+            return false;
+        }
+        return !stat.isDir();
     }
 
     @Before
