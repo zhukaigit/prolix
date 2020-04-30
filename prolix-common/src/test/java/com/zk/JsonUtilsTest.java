@@ -1,8 +1,11 @@
 package com.zk;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.zk.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -27,17 +30,38 @@ public class JsonUtilsTest {
 
     @Data
     @AllArgsConstructor
-    private static class Man implements Serializable {
+    @NoArgsConstructor
+    public static class Man implements Serializable {
         private static final long serialVersionUID = 2435880687056316497L;
         private String name;
     }
 
     @Data
     @AllArgsConstructor
-    private static class Woman implements Serializable {
+    @NoArgsConstructor
+    public static class Woman implements Serializable {
         private static final long serialVersionUID = -766884333390938368L;
         private String name;
     }
 
+
+    @Test
+    public void test_parse() {
+        HashMap<String, ModelOne> map = new HashMap<String, ModelOne>();
+        map.put("key", new ModelOne(new Man("zk")));
+        String jsonStr = JsonUtils.toJsonHasNullKey(map);
+
+        Map<String, ModelOne> resultMap = JsonUtils.parse(jsonStr, new TypeReference<Map<String, ModelOne>>() {
+        });
+
+        Assert.assertEquals(map.get("key").getMan().getName(), resultMap.get("key").getMan().getName());
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ModelOne{
+        private Man man;
+    }
 
 }
