@@ -52,7 +52,7 @@ public class ZipUtil {
      */
     public static void doCompress(List<CompressInfo> compressInfoList, String compressFileAbsolutePath) {
         AssertUtil.notEmpty(compressInfoList, "待压缩内容不能为空");
-        File file = FileUtil.createFileIfNotExisted(compressFileAbsolutePath);
+        File file = FileUtil.createFile(compressFileAbsolutePath, true);
         ZipOutputStream out;
         try {
             out = new ZipOutputStream(new FileOutputStream(file));
@@ -94,7 +94,7 @@ public class ZipUtil {
             File outTargetZipFile = new File(zipPath);
             if (!outTargetZipFile.getParentFile().exists()) {
                 if (createZipDirIfNotExisted) {
-                    FileUtil.createDirIfNotExisted(outTargetZipFile.getParentFile().getAbsolutePath());
+                    FileUtil.createDir(outTargetZipFile.getParentFile().getAbsolutePath());
                 } else {
                     throw new RuntimeException("压缩文件所在目录不存在");
                 }

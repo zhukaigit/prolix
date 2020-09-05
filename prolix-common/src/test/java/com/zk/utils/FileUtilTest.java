@@ -26,17 +26,28 @@ public class FileUtilTest {
         // 2、说明文件不存在
         Assert.assertFalse(new File(testFilePath).exists());
 
-        System.out.println("文件创建时间：" + new Date().toLocaleString());
-        File file = FileUtil.createFileIfNotExisted(testFilePath);
+        File file = FileUtil.createFile(testFilePath, true);
+        long fileLastModified = file.lastModified();
+        System.out.println("file lastModified：" + new Date(fileLastModified).toLocaleString());
+
         // 3、验证文件创建成功
         Assert.assertTrue(file.exists());
-        Thread.sleep(2000L);
-        // 4、验证再次调用时，是通过一个文件
-        File file2 = FileUtil.createFileIfNotExisted(testFilePath);
-        System.out.println(new Date(file.lastModified()).toLocaleString());
-        Assert.assertEquals(file.lastModified(), file2.lastModified());
+        Thread.sleep(2000L);// 睡眠2秒已校验lastModified
+        // 4、验证再次调用时，是原来的文件
+        File file2 = FileUtil.createFile(testFilePath, false);
+        long file2LastModified = file2.lastModified();
+        System.out.println("file2 lastModified：" + new Date(file2LastModified).toLocaleString());
 
-        file.deleteOnExit();
+        // 5、验证再次调用时，是新创建的文件
+        Thread.sleep(2000L);// 睡眠2秒已校验lastModified
+        File file3 = FileUtil.createFile(testFilePath, true);
+        long file3LastModified = file3.lastModified();
+        System.out.println("file3 lastModified：" + new Date(file3LastModified).toLocaleString());
+        Assert.assertTrue(file3LastModified > fileLastModified);
+        Assert.assertTrue(file3LastModified > file2LastModified);
+        Assert.assertTrue(fileLastModified == file2LastModified);
+
+        file3.deleteOnExit();
     }
 
     @Test
@@ -50,16 +61,29 @@ public class FileUtilTest {
         Assert.assertFalse(new File(testDir).exists());
 
         System.out.println("目录创建时间：" + new Date().toLocaleString());
-        File file = FileUtil.createDirIfNotExisted(testDir);
+        File file = FileUtil.createDir(testDir);
         // 3、验证文件创建成功
         Assert.assertTrue(file.exists());
         Thread.sleep(2000L);
-        // 4、验证再次调用时，是通过一个文件
-        File file2 = FileUtil.createDirIfNotExisted(testDir);
+        // 4、验证再次调用时，是同一个文件
+        File file2 = FileUtil.createDir(testDir);
         System.out.println(new Date(file.lastModified()).toLocaleString());
         Assert.assertEquals(file.lastModified(), file2.lastModified());
 
         file.deleteOnExit();
+    }
+
+    @Test
+    public void testCreateDirIfNotExisted() {
+        // 测试已存在的目录
+        String dir = FileUtil.getTempDir("subDirName");
+        File file = FileUtil.createDir(dir);
+        Assert.assertTrue(file.exists() && file.isDirectory());
+
+        // 测试不存在的目录
+        String dir2 = FileUtil.getTempDir() + UUID.randomUUID().toString();
+        File file2 = FileUtil.createDir(dir2);
+        Assert.assertTrue(file2.exists() && file2.isDirectory());
     }
 
 }

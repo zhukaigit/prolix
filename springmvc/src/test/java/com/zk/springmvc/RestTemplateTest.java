@@ -1,15 +1,25 @@
 package com.zk.springmvc;
 
 
+import com.zk.common.interceptor.LoggingClientHttpRequestInterceptor;
+import com.zk.utils.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,11 +29,10 @@ import java.util.Map;
  *  https://www.open-open.com/lib/view/open1436018677419.html
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-config.xml")
+@ContextConfiguration({"classpath:spring-config.xml", "classpath:spring-restTemplate.xml"})
 @Slf4j
+@Configuration
 public class RestTemplateTest {
-
-
 
     @Autowired
     private RestTemplate restTemplate;
@@ -68,6 +77,30 @@ public class RestTemplateTest {
                 }
             }
         }).start();
+    }
+
+    /**
+     * 使用restTemplate下载文件
+     */
+    @Test
+    public void testDownLoad() {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Resource> httpEntity = new HttpEntity<Resource>(headers);
+        String url = "请求地址";
+        LoggingClientHttpRequestInterceptor.NO_LOG_RESPONSE_BODY.set(1);
+        ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, byte[].class);
+        try {
+            String tempDir = FileUtil.getTempDir("zipUtilTest");
+            System.out.println("测试临时目录：" + tempDir);
+            File file = new File(tempDir + "1.zip");
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(response.getBody());
+            fos.flush();
+            fos.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }

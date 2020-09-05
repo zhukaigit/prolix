@@ -16,17 +16,21 @@ public class FileUtil {
     }
 
     /**
-     * 若文件不存在则创建
+     * 创建文件
      * @param filePath 文件绝对路径
+     * @param fileExistsDeleted 若文件已存在是否删除：true-删除，false-不删除，直接返回
      * @return
      */
-    public static File createFileIfNotExisted(String filePath) {
+    public static File createFile (String filePath, boolean fileExistsDeleted) {
         File file = new File(filePath);
 
         if (file.exists() && file.isFile()) {
-            return file;
+            if (fileExistsDeleted) {
+                AssertUtil.assertTrue(file.delete(), "删除文件失败");
+            } else {
+                return file;
+            }
         }
-
         if (!file.getParentFile().exists()) {
             boolean mkdirs = file.getParentFile().mkdirs();
             AssertUtil.assertTrue(mkdirs, "文件所在目录创建失败");
@@ -41,11 +45,11 @@ public class FileUtil {
     }
 
     /**
-     * 若目录不存在则创建
+     * 创建目录
      * @param dirPath 目录绝对路径
      * @return
      */
-    public static File createDirIfNotExisted(String dirPath) {
+    public static File createDir (String dirPath) {
         File file = new File(dirPath);
         if (file.exists() && file.isDirectory()) {
             return file;
@@ -53,6 +57,31 @@ public class FileUtil {
         boolean mkdirs = file.mkdirs();
         AssertUtil.assertTrue(mkdirs, "目录创建失败");
         return file;
+    }
+
+    /**
+     * 获取临时目录,若subDirName参数不为空,则在该临时目录下创建子文件夹,并返回该文件夹路径
+     *
+     * @param subDirNames 临时目录下的子目录名称
+     * @return
+     */
+    public static String getTempDir(String... subDirNames) {
+        // 系统临时目录
+        String temDir = System.getProperty("java.io.tmpdir");
+
+        // 组装临时目录
+        StringBuilder resultDir = new StringBuilder(temDir.endsWith(File.separator) ? temDir : temDir + File.separator);
+        if (subDirNames != null && subDirNames.length > 0) {
+            for (String subDirName : subDirNames) {
+                // 校验子文件名中是否有目录分割符
+                AssertUtil.assertTrue(!subDirName.contains(File.separator), subDirName + "子文件名中不能有目录分割符");
+                resultDir.append(subDirName).append(File.separator);
+            }
+        }
+
+        // 创建目录
+        String path = createDir(resultDir.toString()).getAbsolutePath();
+        return path.endsWith(File.separator) ? path : path + File.separator;
     }
 
 }

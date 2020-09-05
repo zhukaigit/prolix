@@ -65,8 +65,14 @@
         <property name="errorHandler">
             <bean class="org.springframework.web.client.DefaultResponseErrorHandler"/>
         </property>
+        <property name="interceptors">
+            <list>
+                <bean class="com.zk.common.interceptor.LoggingClientHttpRequestInterceptor"/>
+            </list>
+        </property>
         <property name="messageConverters">
             <list>
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
                 <bean class="org.springframework.http.converter.FormHttpMessageConverter"/>
                 <bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
                 <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
