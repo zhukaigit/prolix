@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 public class MyPoolObject {
 
-    private String createdTimeString;// 创建时间
     private int remainBattery;// 剩余电量
+    private int id;
 
 }
