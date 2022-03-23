@@ -93,10 +93,10 @@ public class OSSClientUtil {
      * 组装ossUrl
      * 注意：可参考官方文档：https://help.aliyun.com/document_detail/31834.html?spm=a2c4g.11186623.6.628.76a82d56rEpT4Q
      *
-     * @param bucketName 如：dzbd-test
-     * @param endPoint 如：http://oss-cn-hzjbp-a-internal.aliyuncs.com
+     * @param bucketName 如：bucketNameA
+     * @param endPoint 如：http://xxxxxx.aliyuncs.com
      * @param ossKey 如：0a570d2d-254e-4427-ba80-cc27273fca62-ossUrl.png
-     * @return 如：http://dzbd-test.oss-cn-hzjbp-a-internal.aliyuncs.com/0a570d2d-254e-4427-ba80-cc27273fca62-ossUrl.png
+     * @return 如：http://xxxxxxx.aliyuncs.com/0a570d2d-254e-4427-ba80-cc27273fca62-ossUrl.png
      */
     private static String assembleOssUrl(String bucketName, String endPoint, String ossKey) {
         return String.format("http://%s.%s/%s", bucketName, endPoint.substring(7, endPoint.length()), ossKey);
