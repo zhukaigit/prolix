@@ -68,6 +68,7 @@
     <module>springboot-test</module>
     <module>prolix-common</module>
     <module>urule-test</module>
+    <module>diff-jdk-test</module>
   </modules>
 
 </project>
