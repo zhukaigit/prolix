@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 /**
  * 使用多线程方式处理各个请求的阻塞现象
+ * 注意：代码每执行一次server.accept()，只能跟一个客户端建立连接，这里server.accept()在循环中，所以可以接受多个客户端的连接
  */
 @SuppressWarnings("all")
 public class MultiThreadSocketService {
