@@ -116,7 +116,14 @@ public class MyAspect {
 
     //测试：com.zk.AppTest.test_beforePointcut3()
     //描述：只有com包以及子包下的Tiger类的入参为Date类型的方法才会被拦截，注意：Date是方法中声明的类型，而不是传入的类型
-    @Before("execution(* com..Tiger.*(java.util.Date))")
+    @Before(value = "execution(* com..Tiger.*(java.util.Date)) && args(param)")
+    public void before3_1(Date param) {
+        System.out.println("\n在before3()基础上，绑定了入参：" + param.toLocaleString());
+    }
+
+    //测试：com.zk.AppTest.test_beforePointcut3()
+    //描述：只有com包以及子包下的Tiger类的入参为Date类型的方法才会被拦截，注意：Date是方法中声明的类型，而不是传入的类型
+    @Before(value = "execution(* com..Tiger.*(java.util.Date))")
     public void before3() {
         System.out.println("\n【before】【execution(* com..Tiger.*(java.util.Date))】");
     }

@@ -171,4 +171,19 @@ public class GuavaCacheTest {
 
     }
 
+    @Test
+    public void test_cache() {
+        Cache<String, Object> cache = CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS).build();
+        cache.put("key1", "value1");
+        System.out.println(cache.asMap().containsKey("key1"));
+        System.out.println(cache.getIfPresent("key1"));
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(cache.getIfPresent("key1"));
+        System.out.println(cache.asMap().containsKey("key1"));
+    }
+
 }

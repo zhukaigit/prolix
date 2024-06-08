@@ -1,6 +1,10 @@
 package com.zk.sort;
 
+import lombok.AllArgsConstructor;
+
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 希尔排序
@@ -22,7 +26,33 @@ import java.util.Arrays;
  */
 public class ShellSort {
 
+    public void test44() {
+        map = new HashMap<>();
+        map.put("1", new User("zk", 18, (byte) 1));
+
+
+        // user对象大小
+        // 对象头 8
+        // 对齐填充：对象最终大小要满足8的倍数
+        // 实例数据
+        int sub3 = 4 + 4 + 1;
+        int userByte = 8 + sub3;
+        int userSize = userByte + 5;
+
+        //
+    }
+
+    private Map<String, User> map;
+    @AllArgsConstructor
+    static class User {
+        private String name;
+        private int age;
+        private byte sex;
+    }
+
     public static void main(String[] args) {
+
+
         Integer[] arr1 = {1, 4, 2, 7, 9, 8, 3, 6};
         System.out.println(Arrays.toString(arr1));
         System.out.println(Arrays.toString(sort(arr1)));

@@ -31,13 +31,19 @@ public class TestController {
     @ApiOperation("健康检查")
     public String ok () {
         log.info("target method");
-
         return "ok, time = " + new Date().toLocaleString();
     }
 
     @PostMapping ("/test/json")
     public String testJson (@RequestBody Map body) {
         log.info("请求体：{}", JsonUtils.toJsonHasNullKey(body));
+        try {
+            if (body.get("sleep") != null) {
+                Thread.sleep(Long.valueOf(body.get("sleep").toString()));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return JsonUtils.toJsonHasNullKey(body);
     }
 

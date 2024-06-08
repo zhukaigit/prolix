@@ -27,6 +27,60 @@ import jxl.write.WritableWorkbook;
 @SuppressWarnings("all")
 public class XlsUtil {
 
+  public static final String exportExcelFile(String[] Title, List<String[]> listContent, OutputStream os) {
+    {
+      String result = "export excel successfully";
+      try {
+        WritableWorkbook workbook = Workbook.createWorkbook(os);
+
+        WritableSheet sheet = workbook.createSheet("Sheet1", 0);
+
+        SheetSettings sheetset = sheet.getSettings();
+        sheetset.setProtected(false);
+
+        WritableFont NormalFont = new WritableFont(WritableFont.ARIAL, 10);
+        WritableFont BoldFont = new WritableFont(WritableFont.ARIAL, 10, WritableFont.BOLD);
+
+        WritableCellFormat wcf_center = new WritableCellFormat(BoldFont);
+        wcf_center.setBorder(Border.ALL, BorderLineStyle.THIN);
+        wcf_center.setVerticalAlignment(VerticalAlignment.CENTRE);
+        wcf_center.setAlignment(Alignment.CENTRE);
+        wcf_center.setWrap(false);
+
+        WritableCellFormat wcf_left = new WritableCellFormat(NormalFont);
+        wcf_left.setBorder(Border.NONE, BorderLineStyle.THIN);
+        wcf_left.setVerticalAlignment(VerticalAlignment.CENTRE);
+        wcf_left.setAlignment(Alignment.LEFT);
+        wcf_left.setWrap(false);
+
+        for (int i = 0; i < Title.length; i++) {
+          sheet.addCell(new Label(i, 0, Title[i], wcf_center));
+        }
+
+        Field[] fields = null;
+        int i = 1;
+        for (String[] objects : listContent) {
+          for (int j = 0; j < objects.length; j++) {
+            Object va = objects[j];
+            if (va == null) {
+              va = "";
+            }
+            sheet.addCell(new Label(j, i, va.toString(), wcf_left));
+            j++;
+          }
+          i++;
+        }
+
+        workbook.write();
+
+        workbook.close();
+      } catch (Exception e) {
+        result = "export excel exception, errorMsg：" + e.toString();
+        e.printStackTrace();
+      }
+      return result;
+    }
+  }
   public static final String exportExcel(String[] Title, List<?> listContent, OutputStream os) {
     String result = "export excel successfully";
     try {

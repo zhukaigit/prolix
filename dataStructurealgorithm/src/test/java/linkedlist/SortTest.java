@@ -1,9 +1,6 @@
 package linkedlist;
 
-import com.sun.xml.internal.bind.v2.model.annotation.Quick;
-import com.zk.sort.CountingSort;
-import com.zk.sort.QuickSort;
-import com.zk.sort.ShellSort;
+import com.zk.sort.*;
 import com.zk.util.NumUtil;
 import org.junit.Test;
 
@@ -66,6 +63,15 @@ public class SortTest {
     }
 
     @Test
+    public void testMergeWithInsertSort() {
+//        Integer[] arr = {95, 14, 11, 49, 1};
+        Integer[] arr = createRandomArr(50);
+        System.out.println("原始数组："+Arrays.toString(arr));
+        MergeWithInsertSort.sort(arr);
+        System.out.println("排序数组："+Arrays.toString(arr));
+    }
+
+    @Test
     public void testSortedArrMerge() {
         Integer[] arr1 = createSortedArr(5);
         Integer[] arr2 = createSortedArr(3);
@@ -94,6 +100,18 @@ public class SortTest {
             quickSort(arr);
             System.out.println("排序数组："+Arrays.toString(arr));
         }
+    }
+
+    @Test
+    public void testQuickSort2() {
+        for (int i = 1; i <= 10; i++) {
+        }
+//        System.out.println("\n====================== 第"+i+"轮 =======================");
+        Integer[] arr = {70, 6, 85, 50};
+//        Integer[] arr = createRandomArr(10);
+        System.out.println("原始数组："+Arrays.toString(arr));
+        QuickSort2.sort(arr);
+        System.out.println("排序数组："+Arrays.toString(arr));
     }
 
     @Test
