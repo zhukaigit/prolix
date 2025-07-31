@@ -18,7 +18,7 @@ public class FastJsonTest2 {
         System.out.println("原始：" + policy.getTime().toLocaleString());
 
         String string = JSONObject.toJSONString(policy);
-        System.out.println("1、JSONObject.toJSONString(policy): " + string);
+        System.out.println("1、JSONObject.toJSONString(policy):  " + string);
 
         policy = JSONObject.parseObject(string).toJavaObject(Policy.class);
         System.out.println("2: " + (policy.getTime().getTime() == mills));
