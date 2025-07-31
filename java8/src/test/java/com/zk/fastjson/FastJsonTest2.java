@@ -7,6 +7,9 @@ import org.junit.Test;
 
 import java.util.Date;
 
+/**
+ * 测试 FastJson
+ */
 public class FastJsonTest2 {
 
     @Test
